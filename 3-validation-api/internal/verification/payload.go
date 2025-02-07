@@ -1,7 +1,7 @@
 package verification
 
 type SendRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Address  string `json:"address"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required"`
+	Address  string `json:"address" validate:"required"`
 }
