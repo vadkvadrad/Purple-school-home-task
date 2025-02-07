@@ -4,16 +4,16 @@ import (
 	"net/http"
 )
 
-type EmailHandler struct {
+type VerificationHandler struct {
 	VerificationService *VerificationService
 }
 
-type EmailHandlerDeps struct {
+type VerificationHandlerDeps struct {
 	VerificationService *VerificationService
 }
 
-func NewEmailHandler(router *http.ServeMux, deps EmailHandlerDeps) {
-	handler := &EmailHandler{
+func NewVerificationHandler(router *http.ServeMux, deps VerificationHandlerDeps) {
+	handler := &VerificationHandler{
 		deps.VerificationService,
 	}
 
@@ -22,14 +22,14 @@ func NewEmailHandler(router *http.ServeMux, deps EmailHandlerDeps) {
 }
 
 
-func (handler *EmailHandler) Send() http.HandlerFunc {
+func (handler *VerificationHandler) Send() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		
 	}
 }
 
 
-func (handler *EmailHandler) Verify() http.HandlerFunc {
+func (handler *VerificationHandler) Verify() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 	}

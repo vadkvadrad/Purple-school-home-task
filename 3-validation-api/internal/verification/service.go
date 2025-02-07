@@ -1,13 +1,15 @@
 package verification
 
-import "verify-api/pkg/db"
+import (
+	"verify-api/internal/user"
+)
 
 type VerificationService struct {
-	Db *db.Db
+	UserRepository *user.UserRepository
 }
 
-func NewVerificationService(db *db.Db) *VerificationService {
+func NewVerificationService(userRepository *user.UserRepository) *VerificationService {
 	return &VerificationService{
-		Db: db,
+		UserRepository: userRepository,
 	}
 }

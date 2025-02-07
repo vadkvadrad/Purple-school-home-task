@@ -3,7 +3,10 @@ package main
 import (
 	"fmt"
 	"net/http"
-//	"verify-api/configs"
+	"verify-api/configs"
+	"verify-api/internal/user"
+	"verify-api/internal/verification"
+	"verify-api/pkg/db"
 )
 
 func main() {
@@ -20,14 +23,20 @@ func main() {
 
 
 func App() http.Handler {
-	//config := configs.Load()
+	config := configs.Load()
+	db := db.NewDb(config)
 	router := http.NewServeMux()
 
-	// Handlers
-
 	// Repository
+	userRepository := user.NewUserRepository(db)
 
 	// Services
+	verificationService := verification.NewVerificationService(userRepository)
+
+	// Handlers
+	verification.NewVerificationHandler(router, verification.VerificationHandlerDeps{
+		VerificationService: verificationService,
+	})
 
 	return router
 }
