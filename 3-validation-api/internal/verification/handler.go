@@ -2,20 +2,19 @@ package verification
 
 import (
 	"net/http"
-	"verify-api/configs"
 )
 
 type EmailHandler struct {
-	Config *configs.Config
+	VerificationService *VerificationService
 }
 
 type EmailHandlerDeps struct {
-	// service here
+	VerificationService *VerificationService
 }
 
 func NewEmailHandler(router *http.ServeMux, deps EmailHandlerDeps) {
 	handler := &EmailHandler{
-		// service here
+		deps.VerificationService,
 	}
 
 	router.HandleFunc("POST /send", handler.Send())
