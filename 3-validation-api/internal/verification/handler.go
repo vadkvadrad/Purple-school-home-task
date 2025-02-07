@@ -1,4 +1,4 @@
-package email
+package verification
 
 import (
 	"net/http"
@@ -25,7 +25,7 @@ func NewEmailHandler(router *http.ServeMux, deps EmailHandlerDeps) {
 
 func (handler *EmailHandler) Send() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
+		
 	}
 }
 
