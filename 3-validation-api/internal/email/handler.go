@@ -7,5 +7,9 @@ type EmailHandler struct {
 }
 
 type EmailHandlerDeps struct {
-	
+	Config *configs.Config
 }
+
+// func NewEmailHandler(conf *configs.Config) *EmailHandler {
+
+// }

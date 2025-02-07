@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"verify-api/configs"
 )
 
 func main() {
@@ -19,7 +20,10 @@ func main() {
 
 
 func App() http.Handler {
+	config := configs.Load()
 	router := http.NewServeMux()
+
+	// Handlers
 
 	// Repository
 

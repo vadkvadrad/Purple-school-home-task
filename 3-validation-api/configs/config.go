@@ -10,10 +10,10 @@ import (
 )
 
 type Config struct {
-	Db DbConfig
+	Db dbConfig
 }
 
-type DbConfig struct {
+type dbConfig struct {
 	Dsn string
 }
 
@@ -24,7 +24,7 @@ func Load() *Config {
 	}
 
 	return &Config{
-		Db: DbConfig{
+		Db: dbConfig{
 			Dsn: os.Getenv("DSN"),
 		},
 	}
