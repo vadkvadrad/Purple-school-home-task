@@ -11,10 +11,19 @@ import (
 
 type Config struct {
 	Db dbConfig
+	Sender senderConfig
 }
 
 type dbConfig struct {
 	Dsn string
+}
+
+type senderConfig struct {
+	Email string
+	Password string
+	Name string
+	Address string
+	Port string
 }
 
 func Load() *Config {
@@ -27,8 +36,14 @@ func Load() *Config {
 		Db: dbConfig{
 			Dsn: os.Getenv("DSN"),
 		},
+		Sender: senderConfig{
+			Email: os.Getenv("EMAIL"),
+			Password: os.Getenv("PASSWORD"),
+			Name: os.Getenv("NAME"),
+			Address: os.Getenv("ADDRESS"),
+			Port: os.Getenv("PORT"),
+		},
 	}
-
 }
 
 

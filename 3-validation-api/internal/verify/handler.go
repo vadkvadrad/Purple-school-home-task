@@ -24,17 +24,6 @@ func NewVerifyHandler(router *http.ServeMux, deps VerifyHandlerDeps) {
 
 	router.HandleFunc("POST /send", handler.Send())
 	router.HandleFunc("GET /verify/{hash}", handler.Verify())
-
-	router.HandleFunc("POST /test", handler.TmpSend())
-}
-
-func (handler *VerifyHandler) TmpSend() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		err := handler.VerifyService.TemSend()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	}
 }
 
 func (handler *VerifyHandler) Send() http.HandlerFunc {

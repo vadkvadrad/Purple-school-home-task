@@ -32,7 +32,10 @@ func App() http.Handler {
 	userRepository := user.NewUserRepository(db)
 
 	// Services
-	verifyService := verify.NewVerifyService(userRepository)
+	verifyService := verify.NewVerifyService(verify.VerifyServiceDeps{
+		UserRepository: userRepository,
+		Config: config,
+	})
 
 	// Handlers
 	verify.NewVerifyHandler(router, verify.VerifyHandlerDeps{
