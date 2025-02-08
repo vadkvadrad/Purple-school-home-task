@@ -7,6 +7,7 @@ import (
 	"verify-api/internal/user"
 	"verify-api/internal/verify"
 	"verify-api/pkg/db"
+	"verify-api/pkg/middleware"
 )
 
 func main() {
@@ -38,5 +39,10 @@ func App() http.Handler {
 		VerifyService: verifyService,
 	})
 
-	return router
+	// Middlewares
+	stack := middleware.Chain(
+		middleware.Logging,
+	)
+
+	return stack(router)
 }
