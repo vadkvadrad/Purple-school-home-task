@@ -1,7 +1,6 @@
 package verify
 
 import (
-	"fmt"
 	"net/http"
 	"verify-api/pkg/req"
 )
@@ -25,8 +24,18 @@ func NewVerifyHandler(router *http.ServeMux, deps VerifyHandlerDeps) {
 
 	router.HandleFunc("POST /send", handler.Send())
 	router.HandleFunc("GET /verify/{hash}", handler.Verify())
+
+	router.HandleFunc("POST /test", handler.TmpSend())
 }
 
+func (handler *VerifyHandler) TmpSend() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		err := handler.VerifyService.TemSend()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	}
+}
 
 func (handler *VerifyHandler) Send() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -36,29 +45,33 @@ func (handler *VerifyHandler) Send() http.HandlerFunc {
 			return
 		}
 
+		// FIXME START
 		currentUser, _ := handler.VerifyService.GetByEmail(body.Email)
 		if currentUser != nil && currentUser.IsVerified {
 			http.Error(w, ErrUserAlreadyVerified, http.StatusBadRequest)
 			return
 		} else if currentUser != nil && !currentUser.IsVerified {
-			// TODO отослать ссылку подтверждения
-			// handler.VerifyService.Send(currentUser.Hash)
+			err = handler.VerifyService.Send(currentUser.Hash)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
 			return
 		}
+		// END
 
 
 		hash := handler.VerifyService.GenerateHash()
 
 		handler.VerifyService.Create(
 			body.Email,
-			body.Password,
-			body.Address,
 			hash,
 		)
 
-		// TODO отослать ссылку подтверждения
-		// handler.VerifyService.Send(hash)
-		fmt.Println(hash)
+		err = handler.VerifyService.Send(hash)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
