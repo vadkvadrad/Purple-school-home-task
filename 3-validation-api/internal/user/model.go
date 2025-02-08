@@ -11,8 +11,8 @@ type User struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 	Address  string `json:"address"`
-	Hash string `json:"hash"`
-	Valid bool `json:"valid"`
+	Hash string `json:"hash" gorm:"uniqueIndex"`
+	IsVerified bool `json:"is_verified"`
 }
 
 func GenerateHash() string {

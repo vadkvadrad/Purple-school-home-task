@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"verify-api/configs"
 	"verify-api/internal/user"
-	"verify-api/internal/verification"
+	"verify-api/internal/verify"
 	"verify-api/pkg/db"
 )
 
@@ -31,11 +31,11 @@ func App() http.Handler {
 	userRepository := user.NewUserRepository(db)
 
 	// Services
-	verificationService := verification.NewVerificationService(userRepository)
+	verifyService := verify.NewVerifyService(userRepository)
 
 	// Handlers
-	verification.NewVerificationHandler(router, verification.VerificationHandlerDeps{
-		VerificationService: verificationService,
+	verify.NewVerifyHandler(router, verify.VerifyHandlerDeps{
+		VerifyService: verifyService,
 	})
 
 	return router
