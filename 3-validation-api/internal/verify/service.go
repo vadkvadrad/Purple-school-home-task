@@ -2,6 +2,7 @@ package verify
 
 import (
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"net"
 	"net/smtp"
@@ -60,6 +61,16 @@ func(service *VerifyService) GenerateHash() (string) {
 		hash = user.GenerateHash()
 	}
 	return hash
+}
+
+func (service *VerifyService) CheckExists(email string) (user *user.User, err error){
+	currentUser, _ := service.UserRepository.FindByEmail(email)
+	if currentUser != nil && currentUser.IsVerified {
+		return currentUser, errors.New(ErrUserAlreadyVerified)
+	} else if currentUser != nil && !currentUser.IsVerified {
+		return currentUser, nil
+	}
+	return nil, nil
 }
 
 func (service *VerifyService) Send(hash string) error {

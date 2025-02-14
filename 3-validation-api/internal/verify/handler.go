@@ -34,19 +34,20 @@ func (handler *VerifyHandler) Send() http.HandlerFunc {
 			return
 		}
 
-		// FIXME START
-		currentUser, _ := handler.VerifyService.GetByEmail(body.Email)
-		if currentUser != nil && currentUser.IsVerified {
-			http.Error(w, ErrUserAlreadyVerified, http.StatusBadRequest)
+
+		user, err := handler.VerifyService.CheckExists(body.Email)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
-		} else if currentUser != nil && !currentUser.IsVerified {
-			err = handler.VerifyService.Send(currentUser.Hash)
+		}
+		if user != nil  {
+			err = handler.VerifyService.Send(user.Hash)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
 			return
 		}
-		// END
+
 
 
 		hash := handler.VerifyService.GenerateHash()
