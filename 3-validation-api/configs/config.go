@@ -1,6 +1,7 @@
 package configs
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -10,15 +11,15 @@ import (
 )
 
 type Config struct {
-	Db dbConfig
-	Sender senderConfig
+	Db DbConfig
+	Sender SenderConfig
 }
 
-type dbConfig struct {
+type DbConfig struct {
 	Dsn string
 }
 
-type senderConfig struct {
+type SenderConfig struct {
 	Email string
 	Password string
 	Name string
@@ -26,26 +27,50 @@ type senderConfig struct {
 	Port string
 }
 
-func Load() *Config {
+func Load() (*Config, error) {
 	err := godotenv.Load(dir(".env"))
 	if err != nil {
 		log.Println("Error loading .env file, using default config.", "Error:", err.Error())
 	}
+	config := &Config{
+        Db: DbConfig{
+            Dsn: getEnv("DSN", ""),
+        },
+        Sender: SenderConfig{
+            Email:    getEnv("EMAIL", ""),
+            Password: getEnv("PASSWORD", ""),
+            Name:     getEnv("NAME", "Default Sender"),
+            Address:  getEnv("ADDRESS", "smtp.example.com"),
+            Port:     getEnv("PORT", "587"),
+        },
+    }
 
-	return &Config{
-		Db: dbConfig{
-			Dsn: os.Getenv("DSN"),
-		},
-		Sender: senderConfig{
-			Email: os.Getenv("EMAIL"),
-			Password: os.Getenv("PASSWORD"),
-			Name: os.Getenv("NAME"),
-			Address: os.Getenv("ADDRESS"),
-			Port: os.Getenv("PORT"),
-		},
-	}
+    if err := config.validate(); err != nil {
+        return nil, err
+    }
+
+    return config, nil
 }
 
+func (c *Config) validate() error {
+    if c.Db.Dsn == "" {
+        return errors.New("DSN is required")
+    }
+    if c.Sender.Email == "" {
+        return errors.New("sender Email is required")
+    }
+    if c.Sender.Password == "" {
+        return errors.New("sender Password is required")
+    }
+    return nil
+}
+
+func getEnv(key, fallback string) string {
+    if value, ok := os.LookupEnv(key); ok {
+        return value
+    }
+    return fallback
+}
 
 func dir(envFile string) string {
 	currentDir, err := os.Getwd()

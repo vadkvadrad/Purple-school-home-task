@@ -24,7 +24,10 @@ func main() {
 
 
 func App() http.Handler {
-	config := configs.Load()
+	config, err := configs.Load()
+	if err != nil {
+		panic(err)
+	}
 	db := db.NewDb(config)
 	router := http.NewServeMux()
 
