@@ -3,7 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
-//	"order-api/configs"
+	"order-api/pkg/middleware"
+	//	"order-api/configs"
 )
 
 func main() {
@@ -27,5 +28,11 @@ func App() http.Handler {
 
 	router := http.NewServeMux()
 
-	return router
+	// Middleware
+	stack := middleware.Chain(
+		middleware.CORS,
+		middleware.Logging,
+	)
+
+	return stack(router)
 }
