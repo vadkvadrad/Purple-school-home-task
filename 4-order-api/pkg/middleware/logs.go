@@ -1,9 +1,10 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 func Logging(next http.Handler) http.Handler {
@@ -15,6 +16,19 @@ func Logging(next http.Handler) http.Handler {
 		}
 
 		next.ServeHTTP(wrapper, r)
-		log.Println(wrapper.StatusCode, r.Method, r.URL.Path, time.Since(start))
+		logrus.SetFormatter(&logrus.JSONFormatter{})
+
+		logger := logrus.Fields{
+			"status code": wrapper.StatusCode,
+			"method":   r.Method,
+			"path": r.URL.Path,
+			"time": time.Since(start),
+		}
+
+		if wrapper.StatusCode >= 500 {
+			logrus.WithFields(logger).Warn("Something went wrong")
+		} else {
+			logrus.WithFields(logger).Info("ok")
+		}
 	})
 }

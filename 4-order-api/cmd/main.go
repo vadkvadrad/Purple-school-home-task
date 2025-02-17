@@ -3,8 +3,9 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"order-api/internal/product"
 	"order-api/pkg/middleware"
-	//	"order-api/configs"
+	"order-api/configs"
 )
 
 func main() {
@@ -21,12 +22,16 @@ func main() {
 
 
 func App() http.Handler {
-	//conf, err := configs.Load()
-	// if err != nil {
-	// 	panic(err)
-	// }
-
+	conf, err := configs.Load()
+	if err != nil {
+		panic(err)
+	}
 	router := http.NewServeMux()
+
+	// Handlers
+	product.NewProductHandler(router, &product.ProductHandlerDeps{
+		Config: conf,
+	})
 
 	// Middleware
 	stack := middleware.Chain(
