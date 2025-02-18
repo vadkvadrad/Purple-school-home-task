@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -8,6 +9,7 @@ import (
 )
 
 func Logging(next http.Handler) http.Handler {
+	logrus.SetFormatter(&logrus.JSONFormatter{})
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		wrapper := &WrapperWriter{
@@ -16,7 +18,6 @@ func Logging(next http.Handler) http.Handler {
 		}
 
 		next.ServeHTTP(wrapper, r)
-		logrus.SetFormatter(&logrus.JSONFormatter{})
 
 		logger := logrus.Fields{
 			"status code": wrapper.StatusCode,
