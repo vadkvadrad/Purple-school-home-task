@@ -5,7 +5,6 @@ import (
 )
 
 type JWTData struct {
-	Email string
 	Phone string
 }
 
@@ -21,7 +20,6 @@ func NewJwt(secret string) *JWT {
 
 func (j *JWT) Create(data JWTData) (token string, err error) {
 	bytes := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"email": data.Email,
 		"phone": data.Phone,
 	})
 
@@ -41,11 +39,9 @@ func (j *JWT) Parse(token string) (bool, *JWTData) {
 		return false, nil
 	}
 
-	email := t.Claims.(jwt.MapClaims)["email"]
 	phone := t.Claims.(jwt.MapClaims)["phone"]
 
 	return true, &JWTData{
-		Email: email.(string),
 		Phone: phone.(string),
 	}
 } 

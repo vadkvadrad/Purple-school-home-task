@@ -16,6 +16,14 @@ func NewAuthService(userRepository *user.UserRepository) *AuthService {
 	}
 }
 
+func (service *AuthService) GetBySessionId(sessionId string) (*user.User, error) {
+	existedUser, err := service.UserRepository.FindByKey(user.SessionIdKey, sessionId)
+	if err != nil {
+		return nil, err
+	}
+	return existedUser, nil
+}
+
 func (service *AuthService) Login(phone, email string) (string, error) {
 	existedUser, _ := service.UserRepository.FindByKey(user.PhoneKey, phone)
 	if existedUser == nil {

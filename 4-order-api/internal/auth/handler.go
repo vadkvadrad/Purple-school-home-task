@@ -3,6 +3,7 @@ package auth
 import (
 	"net/http"
 	"order-api/configs"
+	"order-api/pkg/jwt"
 	"order-api/pkg/req"
 	"order-api/pkg/res"
 )
@@ -38,6 +39,7 @@ func (handler *AuthHandler) Login() http.HandlerFunc {
 		sessionId, err := handler.AuthService.Login(body.Phone, body.Email)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		data := LoginResponse{
@@ -49,6 +51,35 @@ func (handler *AuthHandler) Login() http.HandlerFunc {
 
 func (handler *AuthHandler) Verify() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		body, err := req.HandleBody[VerifyRequest](w, r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 
+		user, err := handler.AuthService.GetBySessionId(body.SessionId)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if user.Code != body.Code {
+			res.Json(w, "wrong authorization code", http.StatusUnauthorized)
+			return 
+		}
+
+		jwtCreator := jwt.NewJwt(handler.Config.Auth.Secret)
+		token, err := jwtCreator.Create(jwt.JWTData{
+			Phone: user.Phone,
+		})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		
+		data := &VerifyResponse{
+			Token: token,
+		} 
+		res.Json(w, data, http.StatusOK)
 	}
 }
