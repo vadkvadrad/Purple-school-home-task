@@ -36,7 +36,7 @@ func App() http.Handler {
 	userRepository := user.NewUserRepository(db, conf)
 
 	// Services
-	authService := auth.NewAuthService(userRepository)
+	authService := auth.NewAuthService(conf, userRepository)
 
 	// Handlers
 	product.NewProductHandler(router, &product.ProductHandlerDeps{

@@ -13,6 +13,7 @@ import (
 type Config struct {
 	Db DbConfig
 	Auth AuthConfig
+	Sender SenderConfig
 }
 
 type DbConfig struct {
@@ -23,6 +24,13 @@ type AuthConfig struct {
 	Secret string
 }
 
+type SenderConfig struct {
+	Email string
+	Password string
+	Name string
+	Address string
+	Port string
+}
 
 func Load() (*Config, error) {
 	err := godotenv.Load(dir(".env"))
@@ -36,6 +44,13 @@ func Load() (*Config, error) {
 		Auth: AuthConfig{
 			Secret: getEnv("SECRET", ""),
 		},
+		Sender: SenderConfig{
+            Email:    getEnv("EMAIL", ""),
+            Password: getEnv("PASSWORD", ""),
+            Name:     getEnv("NAME", "Default Sender"),
+            Address:  getEnv("ADDRESS", "smtp.mail.ru"),
+            Port:     getEnv("PORT", "465"),
+        },
     }
 
     if err := config.validate(); err != nil {
