@@ -12,10 +12,15 @@ import (
 
 type Config struct {
 	Db DbConfig
+	Auth AuthConfig
 }
 
 type DbConfig struct {
 	Dsn string
+}
+
+type AuthConfig struct {
+	Secret string
 }
 
 
@@ -28,6 +33,9 @@ func Load() (*Config, error) {
         Db: DbConfig{
             Dsn: getEnv("DSN", ""),
         },
+		Auth: AuthConfig{
+			Secret: getEnv("SECRET", ""),
+		},
     }
 
     if err := config.validate(); err != nil {
