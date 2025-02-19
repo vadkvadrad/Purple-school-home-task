@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"order-api/configs"
 	"order-api/pkg/db"
+
+	"gorm.io/gorm/clause"
 )
 
 const (
@@ -26,6 +28,14 @@ func NewUserRepository(db *db.Db, config *configs.Config) *UserRepository {
 
 func (repo *UserRepository) Create(user *User) (*User, error) {
 	result := repo.Db.Create(user)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return user, nil
+} 
+
+func (repo *UserRepository) Update(user *User) (*User, error) {
+	result := repo.Db.Clauses(clause.Returning{}).Updates(user)
 	if result.Error != nil {
 		return nil, result.Error
 	}

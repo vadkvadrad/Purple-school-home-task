@@ -3,9 +3,12 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"order-api/internal/product"
-	"order-api/pkg/middleware"
 	"order-api/configs"
+	"order-api/internal/auth"
+	"order-api/internal/product"
+	"order-api/internal/user"
+	"order-api/pkg/db"
+	"order-api/pkg/middleware"
 )
 
 func main() {
@@ -27,10 +30,21 @@ func App() http.Handler {
 		panic(err)
 	}
 	router := http.NewServeMux()
+	db := db.NewDb(conf)
+
+	// Repositories
+	userRepository := user.NewUserRepository(db, conf)
+
+	// Services
+	authService := auth.NewAuthService(userRepository)
 
 	// Handlers
 	product.NewProductHandler(router, &product.ProductHandlerDeps{
 		Config: conf,
+	})
+	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
+		Config: conf,
+		AuthService: authService,
 	})
 
 	// Middleware

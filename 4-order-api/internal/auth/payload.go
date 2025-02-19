@@ -1,8 +1,8 @@
 package auth
 
 type LoginRequest struct {
-	Phone string `json:"phone" validate:"required,phone"`
-	Email string `json:"email" validate:"email"`
+	Phone string `json:"phone" validate:"required"`
+	Email string `json:"email"`
 }
 
 type LoginResponse struct {
