@@ -2,6 +2,7 @@ package auth
 
 import (
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"net"
 	"net/smtp"
@@ -43,9 +44,12 @@ func (service *AuthService) Login(phone, email string) (string, error) {
 		}
 		createdUser.Generate()
 
-		service.UserRepository.Create(&createdUser)
+		_, err := service.UserRepository.Create(&createdUser)
+		if err != nil {
+			return "", err
+		}
 
-		err := service.send(&createdUser)
+		err = service.send(&createdUser)
 		if err != nil {return "", err}
 		return createdUser.SessionId, nil
 	}
@@ -66,7 +70,10 @@ func (service *AuthService) send(user *user.User) error {
 	fmt.Println(user.Code)
 
 	if user.Email != "" {
-		service.sendOnEmail(user.Email, user.Code)
+		err := service.sendOnEmail(user.Email, user.Code)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -82,6 +89,10 @@ func (service *AuthService) sendOnEmail(emailAddr string, code string) error {
 	// Настройки SMTP
 	server := service.Config.Sender.Address
 	port := service.Config.Sender.Port
+	err := validate(server, port)
+	if err != nil {
+		return err
+	}
 	auth := smtp.PlainAuth("", service.Config.Sender.Email, service.Config.Sender.Password, server)
 
 	// Настроим таймаут подключения
@@ -106,6 +117,7 @@ func (service *AuthService) sendOnEmail(emailAddr string, code string) error {
 	if err != nil {
 		return er.Wrap("Ошибка SMTP-клиента:", err)
 	}
+	defer c.Close()
 
 	// Аутентификация
 	if err = c.Auth(auth); err != nil {
@@ -117,5 +129,15 @@ func (service *AuthService) sendOnEmail(emailAddr string, code string) error {
 		return er.Wrap("Ошибка отправки письма:", err)
 	}
 
+	return nil
+}
+
+func validate(server string, port string) error {
+	if server == "" {
+		return errors.New("server is not specified")
+	}
+	if port == "" {
+		return errors.New("port is not specified")
+	}
 	return nil
 }
