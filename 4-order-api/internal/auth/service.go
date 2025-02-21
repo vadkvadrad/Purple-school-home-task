@@ -4,12 +4,12 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"net"
+	// "net"
 	"net/smtp"
 	"order-api/configs"
 	"order-api/internal/user"
 	"order-api/pkg/er"
-	"time"
+	// "time"
 
 	"github.com/jordan-wright/email"
 )
@@ -89,38 +89,48 @@ func (service *AuthService) sendOnEmail(emailAddr string, code string) error {
 	// Настройки SMTP
 	server := service.Config.Sender.Address
 	port := service.Config.Sender.Port
+	address := server + ":" + port
 	err := validate(server, port)
 	if err != nil {
 		return err
 	}
 	auth := smtp.PlainAuth("", service.Config.Sender.Email, service.Config.Sender.Password, server)
 
-	// Настроим таймаут подключения
-	dialer := &net.Dialer{
-		Timeout:   10 * time.Second,
-		KeepAlive: 10 * time.Second,
-	}
+	// // Настроим таймаут подключения
+	// dialer := &net.Dialer{
+	// 	Timeout:   10 * time.Second,
+	// 	KeepAlive: 10 * time.Second,
+	// }
 
 	// Настроим TLS
 	tlsConfig := &tls.Config{
 		ServerName: server,
 	}
 
-	// Подключаемся к серверу
-	conn, err := tls.DialWithDialer(dialer, "tcp", server+":"+port, tlsConfig)
+	conn, err := tls.Dial("tcp", address, tlsConfig)
 	if err != nil {
-		return er.Wrap("Ошибка подключения:", err)
+	 fmt.Printf("Ошибка подключения: %s\n", err)
+	 return err
 	}
-
-	// Создаём SMTP-клиента
-	c, err := smtp.NewClient(conn, server)
+	defer conn.Close()
+   
+	// Создаем SMTP-клиент
+	client, err := smtp.NewClient(conn, server)
 	if err != nil {
-		return er.Wrap("Ошибка SMTP-клиента:", err)
+	 fmt.Printf("Ошибка создания клиента: %s\n", err)
+	 return err
 	}
-	defer c.Close()
+	defer client.Quit()
+   
+	// Проверяем поддержку TLS
+	if ok, _ := client.Extension("STARTTLS"); ok {
+	 fmt.Println("Сервер поддерживает STARTTLS.")
+	} else {
+	 fmt.Println("Сервер не поддерживает STARTTLS.")
+	}
 
 	// Аутентификация
-	if err = c.Auth(auth); err != nil {
+	if err = client.Auth(auth); err != nil {
 		return er.Wrap("Ошибка аутентификации:", err)
 	}
 
