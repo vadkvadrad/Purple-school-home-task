@@ -109,34 +109,25 @@ func (service *AuthService) sendOnEmail(emailAddr string, code string) error {
 
 	conn, err := tls.Dial("tcp", address, tlsConfig)
 	if err != nil {
-	 fmt.Printf("Ошибка подключения: %s\n", err)
-	 return err
+	 return er.Wrap("Ошибка подключения", err)
 	}
 	defer conn.Close()
    
 	// Создаем SMTP-клиент
 	client, err := smtp.NewClient(conn, server)
 	if err != nil {
-	 fmt.Printf("Ошибка создания клиента: %s\n", err)
-	 return err
+	 return er.Wrap("Ошибка создания клиента", err)
 	}
 	defer client.Quit()
-   
-	// Проверяем поддержку TLS
-	if ok, _ := client.Extension("STARTTLS"); ok {
-	 fmt.Println("Сервер поддерживает STARTTLS.")
-	} else {
-	 fmt.Println("Сервер не поддерживает STARTTLS.")
-	}
 
 	// Аутентификация
 	if err = client.Auth(auth); err != nil {
-		return er.Wrap("Ошибка аутентификации:", err)
+		return er.Wrap("Ошибка аутентификации", err)
 	}
 
 	// Отправляем письмо
 	if err = e.SendWithTLS(server+":"+port, auth, tlsConfig); err != nil {
-		return er.Wrap("Ошибка отправки письма:", err)
+		return er.Wrap("Ошибка отправки письма", err)
 	}
 
 	return nil
