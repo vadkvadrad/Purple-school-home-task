@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"order-api/configs"
 	"order-api/internal/auth"
-	"order-api/internal/product"
 	"order-api/internal/user"
 	"order-api/pkg/db"
 	"order-api/pkg/middleware"
@@ -39,9 +38,6 @@ func App() http.Handler {
 	authService := auth.NewAuthService(conf, userRepository)
 
 	// Handlers
-	product.NewProductHandler(router, &product.ProductHandlerDeps{
-		Config: conf,
-	})
 	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
 		Config: conf,
 		AuthService: authService,
