@@ -41,7 +41,7 @@ func (repo *ProductRepository) Delete(id uint) (error) {
 }
 
 func (repo *ProductRepository) FindById(id uint) (*Product, error) {
-	var prod *Product
+	prod := &Product{}
 	result := repo.Database.First(prod, id)
 	if result.Error != nil {
 		return nil, result.Error

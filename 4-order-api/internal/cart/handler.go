@@ -3,6 +3,12 @@ package cart
 import (
 	"net/http"
 	"order-api/configs"
+	"order-api/pkg/middleware"
+	"order-api/pkg/req"
+	"order-api/pkg/res"
+	"time"
+
+	"gorm.io/datatypes"
 )
 
 type CartHandler struct {
@@ -22,23 +28,44 @@ func NewCartHandler(router *http.ServeMux, deps CartHandlerDeps) {
 	}
 
 	// Создание нового заказа
-	router.HandleFunc("POST /order", handler.Create())
+	router.Handle("POST /order", middleware.IsAuthed(handler.Create(), handler.Config))
 
 	// Получение заказа по ID
-	router.HandleFunc("GET /order/{id}", handler.GetById())
+	router.Handle("GET /order/{id}", middleware.IsAuthed(handler.GetByPhone(), handler.Config))
 
 	// Получение заказа по пользователю
-	router.HandleFunc("GET /my-orders", handler.GetAll())
+	router.Handle("GET /my-orders", middleware.IsAuthed(handler.GetAll(), handler.Config))
 }
 
 
 func (handler *CartHandler) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		
+		phone, ok := r.Context().Value(middleware.ContextPhoneKey).(string)
+		if !ok {
+			http.Error(w, ErrNotAuthorized, http.StatusUnauthorized)
+			return
+		}
+
+		body, err := req.HandleBody[OrderRequest](w, r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		cart, err := handler.CartService.Create(&Cart{
+			Phone: phone,
+			Products: body.Products,
+			Date: datatypes.Date(time.Now()),
+		})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		res.Json(w, cart, http.StatusCreated)
 	}
 }
 
-func(handler *CartHandler) GetById() http.HandlerFunc {
+func(handler *CartHandler) GetByPhone() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		
 	}

@@ -33,12 +33,12 @@ func (repo *CartRepository) Update(cart *Cart) (*Cart, error) {
 } 
 
 func (repo *CartRepository) FindByPhone(phone string) (*Cart, error) {
-	var cart Cart
-	result := repo.Database.First(&cart, "phone = ?", phone)
+	cart := &Cart{}
+	result := repo.Database.First(cart, "phone = ?", phone)
 	if result.Error != nil {
 		return nil, result.Error
 	}
-	return &cart, nil
+	return cart, nil
 }
 
 func (repo *CartRepository) GetAll(limit, offset int) []Cart {

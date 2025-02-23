@@ -9,6 +9,6 @@ import (
 type Cart struct {
 	gorm.Model
 	Phone string `json:"phone"`
-	Products pq.StringArray `json:"products"`
+	Products pq.StringArray `json:"products" gorm:"type:text"`
 	Date datatypes.Date `json:"date"`
 }

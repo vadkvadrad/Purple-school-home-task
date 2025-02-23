@@ -1,10 +1,10 @@
 package cart
 
+import "github.com/lib/pq"
 
 type OrderRequest struct {
-	ProductId string `json:"product_id"`
+	Products pq.StringArray `json:"products"`
 }
 
 type GetByIdResponse struct {
-	
 }

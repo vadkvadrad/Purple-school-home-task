@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"order-api/configs"
 	"order-api/internal/auth"
+	"order-api/internal/cart"
+	"order-api/internal/product"
 	"order-api/internal/user"
 	"order-api/pkg/db"
 	"order-api/pkg/middleware"
@@ -32,15 +34,25 @@ func App() http.Handler {
 	db := db.NewDb(conf)
 
 	// Repositories
-	userRepository := user.NewUserRepository(db, conf)
+	userRepository := user.NewUserRepository(db)
+	cartRepository := cart.NewCartRepository(db)
+	productRepository := product.NewProductRepository(db)
 
 	// Services
 	authService := auth.NewAuthService(conf, userRepository)
+	cartService := cart.NewCartService(cart.CartServiceDeps{
+		CartRepository: cartRepository,
+		ProductRepository: productRepository,
+	})
 
 	// Handlers
 	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
 		Config: conf,
 		AuthService: authService,
+	})
+	cart.NewCartHandler(router, cart.CartHandlerDeps{
+		Config: conf,
+		CartService: cartService,
 	})
 
 	// Middleware
