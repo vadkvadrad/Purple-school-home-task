@@ -31,7 +31,7 @@ func (service *CartService) Create(cart *Cart) (*Cart, error) {
 		if err != nil {
 			return nil, err
 		}
-		_, err = service.ProductRepository.FindById(uint(val))
+		_, err = service.ProductRepository.FindById(uint64(val))
 		if err != nil {
 			return nil, er.Wrap(fmt.Sprintf("product №%s", id), err)
 		}
@@ -45,7 +45,7 @@ func (service *CartService) GetByIDAndPhone(id uint64, phone string) (*Cart, err
 		return nil, err
 	}
 	if cart.Phone != phone {
-		return nil, errors.New(ErrWrongUserCredentials)
+		return nil, errors.New(er.ErrWrongUserCredentials)
 	}
 	return cart, nil
 }

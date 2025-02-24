@@ -16,4 +16,5 @@ type Product struct {
 	Images pq.StringArray `json:"images" gorm:"type:text"`
 	Price int `json:"price"`
 	Currency string `json:"currency"`
+	Owner string `json:"owner"`
 }

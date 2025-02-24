@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"order-api/configs"
 	"order-api/internal/product"
+	"order-api/pkg/er"
 	"order-api/pkg/middleware"
 	"order-api/pkg/req"
 	"order-api/pkg/res"
@@ -33,7 +34,7 @@ func NewCartHandler(router *http.ServeMux, deps CartHandlerDeps) {
 	router.Handle("POST /order", middleware.IsAuthed(handler.Create(), handler.Config))
 
 	// Получение заказа по ID
-	router.Handle("GET /order/{id}", middleware.IsAuthed(handler.GetCartID(), handler.Config))
+	router.Handle("GET /order/{id}", middleware.IsAuthed(handler.GetByID(), handler.Config))
 
 	// Получение заказа по пользователю
 	router.Handle("GET /my-orders", middleware.IsAuthed(handler.GetByPhone(), handler.Config))
@@ -44,7 +45,7 @@ func (handler *CartHandler) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		phone, ok := r.Context().Value(middleware.ContextPhoneKey).(string)
 		if !ok {
-			http.Error(w, ErrNotAuthorized, http.StatusUnauthorized)
+			http.Error(w, er.ErrNotAuthorized, http.StatusUnauthorized)
 			return
 		}
 
@@ -73,11 +74,11 @@ func(handler *CartHandler) GetByPhone() http.HandlerFunc {
 	}
 }
 
-func(handler *CartHandler) GetCartID() http.HandlerFunc {
+func(handler *CartHandler) GetByID() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		phone, ok := r.Context().Value(middleware.ContextPhoneKey).(string)
 		if !ok {
-			http.Error(w, middleware.ErrUnauthorized, http.StatusUnauthorized)
+			http.Error(w, er.ErrNotAuthorized, http.StatusUnauthorized)
 			return
 		}
 
@@ -102,7 +103,8 @@ func(handler *CartHandler) GetCartID() http.HandlerFunc {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			product, err := handler.CartService.ProductRepository.FindById(uint(prodId))
+			//TODO сделать в сервисе метод поиска по id
+			product, err := handler.CartService.ProductRepository.FindById(uint64(prodId))
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
