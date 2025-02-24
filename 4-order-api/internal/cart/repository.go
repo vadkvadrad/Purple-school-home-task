@@ -32,9 +32,9 @@ func (repo *CartRepository) Update(cart *Cart) (*Cart, error) {
 	return cart, nil
 } 
 
-func (repo *CartRepository) FindByPhone(phone string) (*Cart, error) {
+func (repo *CartRepository) FindByID(id uint64) (*Cart, error) {
 	cart := &Cart{}
-	result := repo.Database.First(cart, "phone = ?", phone)
+	result := repo.Database.First(cart, "id = ?", id)
 	if result.Error != nil {
 		return nil, result.Error
 	}

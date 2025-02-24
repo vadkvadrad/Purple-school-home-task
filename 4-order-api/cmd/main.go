@@ -54,6 +54,9 @@ func App() http.Handler {
 		Config: conf,
 		CartService: cartService,
 	})
+	product.NewProductHandler(router, product.ProductHandlerDeps{
+		ProductRepository: productRepository,
+	})
 
 	// Middleware
 	stack := middleware.Chain(

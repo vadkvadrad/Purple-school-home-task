@@ -3,9 +3,11 @@ package cart
 import (
 	"net/http"
 	"order-api/configs"
+	"order-api/internal/product"
 	"order-api/pkg/middleware"
 	"order-api/pkg/req"
 	"order-api/pkg/res"
+	"strconv"
 	"time"
 
 	"gorm.io/datatypes"
@@ -31,10 +33,10 @@ func NewCartHandler(router *http.ServeMux, deps CartHandlerDeps) {
 	router.Handle("POST /order", middleware.IsAuthed(handler.Create(), handler.Config))
 
 	// Получение заказа по ID
-	router.Handle("GET /order/{id}", middleware.IsAuthed(handler.GetByPhone(), handler.Config))
+	router.Handle("GET /order/{id}", middleware.IsAuthed(handler.GetCartID(), handler.Config))
 
 	// Получение заказа по пользователю
-	router.Handle("GET /my-orders", middleware.IsAuthed(handler.GetAll(), handler.Config))
+	router.Handle("GET /my-orders", middleware.IsAuthed(handler.GetByPhone(), handler.Config))
 }
 
 
@@ -71,8 +73,43 @@ func(handler *CartHandler) GetByPhone() http.HandlerFunc {
 	}
 }
 
-func(handler *CartHandler) GetAll() http.HandlerFunc {
+func(handler *CartHandler) GetCartID() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		
+		phone, ok := r.Context().Value(middleware.ContextPhoneKey).(string)
+		if !ok {
+			http.Error(w, middleware.ErrUnauthorized, http.StatusUnauthorized)
+			return
+		}
+
+		idStr := r.PathValue("id")
+		id, err := strconv.ParseUint(idStr, 10, 32)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		cart, err := handler.CartService.GetByIDAndPhone(id, phone)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+
+
+		products := make([]product.Product, len(cart.Products))
+		for i, productId := range cart.Products {
+			prodId, err := strconv.Atoi(productId)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			product, err := handler.CartService.ProductRepository.FindById(uint(prodId))
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			products[i] = *product
+		}
+
+		res.Json(w, products, http.StatusOK)
 	}
 }

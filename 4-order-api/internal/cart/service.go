@@ -1,6 +1,12 @@
 package cart
 
-import "order-api/internal/product"
+import (
+	"errors"
+	"fmt"
+	"order-api/internal/product"
+	"order-api/pkg/er"
+	"strconv"
+)
 
 type CartService struct {
 	CartRepository    *CartRepository
@@ -20,17 +26,28 @@ func NewCartService(deps CartServiceDeps) *CartService {
 }
 
 func (service *CartService) Create(cart *Cart) (*Cart, error) {
-	for id := range cart.Products {
-		_, err := service.ProductRepository.FindById(uint(id))
+	for _, id := range cart.Products {
+		val, err := strconv.Atoi(id)
 		if err != nil {
 			return nil, err
+		}
+		_, err = service.ProductRepository.FindById(uint(val))
+		if err != nil {
+			return nil, er.Wrap(fmt.Sprintf("product №%s", id), err)
 		}
 	}
 	return service.CartRepository.Create(cart)
 }
 
-func (service *CartService) GetByPhone(phone string) (*Cart, error) {
-	return service.CartRepository.FindByPhone(phone)
+func (service *CartService) GetByIDAndPhone(id uint64, phone string) (*Cart, error) {
+	cart, err := service.CartRepository.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+	if cart.Phone != phone {
+		return nil, errors.New(ErrWrongUserCredentials)
+	}
+	return cart, nil
 }
 
 func (service *CartService) GetAll(limit, offset int) []Cart {

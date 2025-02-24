@@ -8,7 +8,7 @@ import (
 )
 
 func Logging(next http.Handler) http.Handler {
-	logrus.SetFormatter(&logrus.JSONFormatter{})
+	logrus.SetFormatter(&logrus.TextFormatter{})
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		wrapper := &WrapperWriter{

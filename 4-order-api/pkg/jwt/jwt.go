@@ -1,6 +1,10 @@
 package jwt
 
 import (
+	"encoding/json"
+	"strconv"
+	"time"
+
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -21,6 +25,8 @@ func NewJwt(secret string) *JWT {
 func (j *JWT) Create(data JWTData) (token string, err error) {
 	bytes := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"phone": data.Phone,
+		"exp": json.Number(strconv.FormatInt(time.Now().Add(time.Hour*time.Duration(1)).Unix(), 10)),
+		"iat": json.Number(strconv.FormatInt(time.Now().Unix(), 10)),
 	})
 
 	token, err = bytes.SignedString([]byte(j.Secret))
