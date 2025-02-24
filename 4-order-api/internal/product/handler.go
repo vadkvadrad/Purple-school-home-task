@@ -7,6 +7,10 @@ import (
 	"order-api/pkg/res"
 )
 
+const (
+	ErrWrongProductCredentials = "wrong user credentials"
+)
+
 type ProductHandler struct {
 	Config *configs.Config
 	ProductRepository *ProductRepository
@@ -38,6 +42,8 @@ func (handler *ProductHandler) Create() http.HandlerFunc {
 			Name: body.Name,
 			Description: body.Description,
 			Images: body.Images,
+			Price: body.Price,
+			Currency: CurrencyRUB,
 		})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
