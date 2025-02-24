@@ -25,7 +25,7 @@ func (repo *ProductRepository) Create(prod *Product) (*Product, error) {
 }
 
 func (repo *ProductRepository) Update(prod *Product) (*Product, error) {
-	result := repo.Database.Clauses(clause.Returning{}).Updates(prod)
+	result := repo.Database.DB.Clauses(clause.Returning{}).Updates(prod)
 	if result.Error != nil {
 		return nil, result.Error
 	}

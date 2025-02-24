@@ -8,6 +8,8 @@ import (
 	"order-api/pkg/req"
 	"order-api/pkg/res"
 	"strconv"
+
+	"gorm.io/gorm"
 )
 
 const (
@@ -31,7 +33,7 @@ func NewProductHandler(router *http.ServeMux, deps ProductHandlerDeps) {
 	}
 
 	router.Handle("POST /product", middleware.IsAuthed(handler.Create(), handler.Config))
-	router.Handle("UPDATE /product/{id}", middleware.IsAuthed(handler.Update(), handler.Config))
+	router.Handle("PATCH /product/{id}", middleware.IsAuthed(handler.Update(), handler.Config))
 }
 
 func (handler *ProductHandler) Create() http.HandlerFunc {
@@ -99,6 +101,7 @@ func (handler *ProductHandler) Update() http.HandlerFunc {
 		}
 
 		prod, err = handler.ProductRepository.Update(&Product{
+			Model: gorm.Model{ID: uint(id)},
 			Name: body.Name,
 			Description: body.Description,
 			Images: body.Images,
