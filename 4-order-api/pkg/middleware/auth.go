@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"order-api/configs"
+	"order-api/pkg/er"
 	"order-api/pkg/jwt"
 	"strings"
 )
@@ -12,7 +13,6 @@ type key string
 
 const (
 	ContextPhoneKey key = "ContextPhoneKey"
-	ErrUnauthorized string = "unauthorized"
 )
 
 func IsAuthed(next http.Handler, config *configs.Config) http.Handler {
@@ -36,5 +36,5 @@ func IsAuthed(next http.Handler, config *configs.Config) http.Handler {
 
 func writeUnauthed(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusUnauthorized)
-	http.Error(w, ErrUnauthorized, http.StatusBadRequest)
+	http.Error(w, er.ErrNotAuthorized, http.StatusBadRequest)
 }

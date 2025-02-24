@@ -25,7 +25,7 @@ func (repo *ProductRepository) Create(prod *Product) (*Product, error) {
 }
 
 func (repo *ProductRepository) Update(prod *Product) (*Product, error) {
-	result := repo.Database.Clauses(clause.Returning{}).Updates(prod)
+	result := repo.Database.DB.Clauses(clause.Returning{}).Updates(prod)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -40,8 +40,8 @@ func (repo *ProductRepository) Delete(id uint) (error) {
 	return nil
 }
 
-func (repo *ProductRepository) FindById(id uint) (*Product, error) {
-	var prod *Product
+func (repo *ProductRepository) FindById(id uint64) (*Product, error) {
+	prod := &Product{}
 	result := repo.Database.First(prod, id)
 	if result.Error != nil {
 		return nil, result.Error

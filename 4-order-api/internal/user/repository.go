@@ -2,7 +2,6 @@ package user
 
 import (
 	"fmt"
-	"order-api/configs"
 	"order-api/pkg/db"
 
 	"gorm.io/gorm/clause"
@@ -16,13 +15,11 @@ const (
 
 type UserRepository struct {
 	Db *db.Db
-	Config *configs.Config
 }
 
-func NewUserRepository(db *db.Db, config *configs.Config) *UserRepository {
+func NewUserRepository(db *db.Db) *UserRepository {
 	return &UserRepository{
 		Db: db,
-		Config: config,
 	}
 }
 
