@@ -17,17 +17,20 @@ import (
 type CartHandler struct {
 	Config *configs.Config
 	CartService *CartService
+	ProductRepository *product.ProductRepository
 }
 
 type CartHandlerDeps struct {
 	Config *configs.Config
 	CartService *CartService
+	ProductRepository *product.ProductRepository
 }
 
 func NewCartHandler(router *http.ServeMux, deps CartHandlerDeps) {
 	handler := &CartHandler{
 		Config: deps.Config,
 		CartService: deps.CartService,
+		ProductRepository: deps.ProductRepository,
 	}
 
 	// Создание нового заказа
@@ -38,6 +41,12 @@ func NewCartHandler(router *http.ServeMux, deps CartHandlerDeps) {
 
 	// Получение заказа по пользователю
 	router.Handle("GET /my-orders", middleware.IsAuthed(handler.GetByPhone(), handler.Config))
+
+	// Обновление заказа
+	router.Handle("PATCH /order/{id}", middleware.IsAuthed(handler.Update(), handler.Config))
+
+	// Удаление заказа
+	router.Handle("DELETE /order/{id}", middleware.IsAuthed(handler.Delete(), handler.Config))
 }
 
 
@@ -65,12 +74,6 @@ func (handler *CartHandler) Create() http.HandlerFunc {
 			return
 		}
 		res.Json(w, cart, http.StatusCreated)
-	}
-}
-
-func(handler *CartHandler) GetByPhone() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		
 	}
 }
 
@@ -103,8 +106,8 @@ func(handler *CartHandler) GetByID() http.HandlerFunc {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			//TODO сделать в сервисе метод поиска по id
-			product, err := handler.CartService.ProductRepository.FindById(uint64(prodId))
+			
+			product, err := handler.ProductRepository.FindById(uint64(prodId))
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -113,5 +116,23 @@ func(handler *CartHandler) GetByID() http.HandlerFunc {
 		}
 
 		res.Json(w, products, http.StatusOK)
+	}
+}
+
+func(handler *CartHandler) GetByPhone() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		
+	}
+}
+
+func(handler *CartHandler) Update() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		
+	}
+}
+
+func(handler *CartHandler) Delete() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		
 	}
 }

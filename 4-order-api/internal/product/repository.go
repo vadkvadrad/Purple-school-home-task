@@ -32,7 +32,7 @@ func (repo *ProductRepository) Update(prod *Product) (*Product, error) {
 	return prod, nil
 }
 
-func (repo *ProductRepository) Delete(id uint) (error) {
+func (repo *ProductRepository) Delete(id uint64) (error) {
 	result := repo.Database.Delete(&Product{}, id)
 	if result.Error != nil {
 		return result.Error

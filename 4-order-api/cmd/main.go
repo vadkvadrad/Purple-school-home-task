@@ -53,6 +53,7 @@ func App() http.Handler {
 	cart.NewCartHandler(router, cart.CartHandlerDeps{
 		Config: conf,
 		CartService: cartService,
+		ProductRepository: productRepository,
 	})
 	product.NewProductHandler(router, product.ProductHandlerDeps{
 		Config: conf,

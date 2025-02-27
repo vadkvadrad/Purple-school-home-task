@@ -32,8 +32,14 @@ func NewProductHandler(router *http.ServeMux, deps ProductHandlerDeps) {
 		ProductRepository: deps.ProductRepository,
 	}
 
+	// Добавить продукт
 	router.Handle("POST /product", middleware.IsAuthed(handler.Create(), handler.Config))
+
+	// Обновить продукт
 	router.Handle("PATCH /product/{id}", middleware.IsAuthed(handler.Update(), handler.Config))
+
+	// Удалить продукт
+	router.Handle("DELETE /product/{id}", middleware.IsAuthed(handler.Delete(), handler.Config))
 }
 
 func (handler *ProductHandler) Create() http.HandlerFunc {
@@ -58,6 +64,7 @@ func (handler *ProductHandler) Create() http.HandlerFunc {
 			Currency: CurrencyRUB,
 			Owner: phone,
 		})
+
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return 
@@ -114,5 +121,46 @@ func (handler *ProductHandler) Update() http.HandlerFunc {
 			return
 		}
 		res.Json(w, prod, http.StatusOK)
+	}
+}
+
+
+func (handler *ProductHandler) Delete() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Получение данных
+		phone, ok := r.Context().Value(middleware.ContextPhoneKey).(string)
+		if !ok {
+			http.Error(w, er.ErrNotAuthorized, http.StatusUnauthorized)
+			return
+		}
+
+		idStr := r.PathValue("id")
+		id, err := strconv.ParseUint(idStr, 10, 32)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// Проверка на пользователя
+		prod, err := handler.ProductRepository.FindById(id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		// Service logic
+		if prod.Owner != phone {
+			http.Error(w, er.ErrWrongUserCredentials, http.StatusBadRequest)
+			return
+		}
+
+		// Удаление продукта
+		err = handler.ProductRepository.Delete(id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		res.Json(w, prod, http.StatusAccepted)
 	}
 }
