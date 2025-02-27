@@ -2,7 +2,9 @@ package product
 
 import (
 	"order-api/pkg/db"
+	"strconv"
 
+	"github.com/lib/pq"
 	"gorm.io/gorm/clause"
 )
 
@@ -60,4 +62,22 @@ func (repo *ProductRepository) GetAll(limit, offset int) []Product {
 		Offset(offset). 
 		Scan(&products)
 	return products
+}
+
+// должно быть в сервисе
+func (repo *ProductRepository) GetByIDs(cart pq.StringArray) ([]Product, error) {
+	products := make([]Product, len(cart))
+	for i, productId := range cart {
+		prodId, err := strconv.Atoi(productId)
+		if err != nil {
+			return nil, err
+		}
+		
+		product, err := repo.FindById(uint64(prodId))
+		if err != nil {
+			return nil, err
+		}
+		products[i] = *product
+	}
+	return products, nil
 }

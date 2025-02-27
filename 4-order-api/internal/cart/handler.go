@@ -98,21 +98,10 @@ func(handler *CartHandler) GetByID() http.HandlerFunc {
 			return
 		}
 
-
-		products := make([]product.Product, len(cart.Products))
-		for i, productId := range cart.Products {
-			prodId, err := strconv.Atoi(productId)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			
-			product, err := handler.ProductRepository.FindById(uint64(prodId))
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			products[i] = *product
+		products, err := handler.CartService.ProductRepository.GetByIDs(cart.Products)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		res.Json(w, products, http.StatusOK)

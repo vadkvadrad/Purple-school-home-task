@@ -3,6 +3,7 @@ Cart {
 		1 Реализовать метод Update
 		2 Реализовать метод Delete
 		3 Реализовать метод GetByPhone
+		4 Вынести логику из GetByID в Product Repository
 	}
 	Service {
 		1 Добавить логику к Update
