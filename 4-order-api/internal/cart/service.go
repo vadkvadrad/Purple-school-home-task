@@ -39,7 +39,7 @@ func (service *CartService) Create(cart *Cart) (*Cart, error) {
 	return service.CartRepository.Create(cart)
 }
 
-func (service *CartService) GetByIDAndPhone(id uint64, phone string) (*Cart, error) {
+func (service *CartService) GetByID(id uint64, phone string) (*Cart, error) {
 	cart, err := service.CartRepository.FindByID(id)
 	if err != nil {
 		return nil, err
@@ -52,4 +52,19 @@ func (service *CartService) GetByIDAndPhone(id uint64, phone string) (*Cart, err
 
 func (service *CartService) GetByPhone(phone string) []Cart {
 	return service.CartRepository.FindByPhone(phone)
+}
+
+func (service *CartService) Update(id uint64, newCart *Cart) (*Cart, error) {
+	cart, err := service.CartRepository.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+	if cart.Phone != newCart.Phone {
+		return nil, errors.New(er.ErrWrongUserCredentials)
+	}
+	cart, err = service.CartRepository.Update(newCart)
+	if err != nil {
+		return nil, err
+	}
+	return cart, nil
 }

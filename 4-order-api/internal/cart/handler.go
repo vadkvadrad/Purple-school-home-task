@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"gorm.io/datatypes"
+	"gorm.io/gorm"
 )
 
 type CartHandler struct {
@@ -92,7 +93,7 @@ func(handler *CartHandler) GetByID() http.HandlerFunc {
 			return
 		}
 
-		cart, err := handler.CartService.GetByIDAndPhone(id, phone)
+		cart, err := handler.CartService.GetByID(id, phone)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
@@ -122,7 +123,38 @@ func(handler *CartHandler) GetByPhone() http.HandlerFunc {
 
 func(handler *CartHandler) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		
+		// Получение данных
+		phone, ok := r.Context().Value(middleware.ContextPhoneKey).(string)
+		if !ok {
+			http.Error(w, er.ErrNotAuthorized, http.StatusUnauthorized)
+		}
+
+		body, err := req.HandleBody[OrderRequest](w, r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		idStr := r.PathValue("id")
+		id, err := strconv.ParseUint(idStr, 10, 32)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// Обновление в базе данных
+		updatedCart, err := handler.CartService.Update(id, &Cart{
+			Model: gorm.Model{ID: uint(id)},
+			Phone: phone,
+			Products: body.Products,
+			Date: datatypes.Date(time.Now()),
+		})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		res.Json(w, updatedCart, http.StatusOK)
 	}
 }
 
