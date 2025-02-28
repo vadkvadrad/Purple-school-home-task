@@ -68,3 +68,18 @@ func (service *CartService) Update(id uint64, newCart *Cart) (*Cart, error) {
 	}
 	return cart, nil
 }
+
+func (service *CartService) Delete(id uint64, phone string) (*Cart, error) {
+	cart, err := service.CartRepository.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+	if cart.Phone != phone {
+		return nil, errors.New(er.ErrWrongUserCredentials)
+	}
+	err = service.CartRepository.Delete(id)
+	if err != nil {
+		return nil, err
+	}
+	return cart, nil
+}

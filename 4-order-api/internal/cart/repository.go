@@ -32,6 +32,14 @@ func (repo *CartRepository) Update(cart *Cart) (*Cart, error) {
 	return cart, nil
 } 
 
+func (repo *CartRepository) Delete(id uint64) (error) {
+	result := repo.Database.Delete(&Cart{}, id)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
 func (repo *CartRepository) FindByID(id uint64) (*Cart, error) {
 	cart := &Cart{}
 	result := repo.Database.First(cart, "id = ?", id)

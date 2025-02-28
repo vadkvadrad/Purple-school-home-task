@@ -160,6 +160,24 @@ func(handler *CartHandler) Update() http.HandlerFunc {
 
 func(handler *CartHandler) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		
+		// Получение данных
+		phone, ok := r.Context().Value(middleware.ContextPhoneKey).(string)
+		if !ok {
+			http.Error(w, er.ErrNotAuthorized, http.StatusUnauthorized)
+		}
+
+		idStr := r.PathValue("id")
+		id, err := strconv.ParseUint(idStr, 10, 32)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		deletedCart, err := handler.CartService.Delete(id, phone)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		res.Json(w, deletedCart, http.StatusAccepted)
 	}
 }
