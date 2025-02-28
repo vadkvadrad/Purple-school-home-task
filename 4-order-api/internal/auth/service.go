@@ -1,29 +1,30 @@
 package auth
 
 import (
-	"crypto/tls"
-	"errors"
 	"fmt"
-	// "net"
-	"net/smtp"
 	"order-api/configs"
 	"order-api/internal/user"
-	"order-api/pkg/er"
-	// "time"
-
-	"github.com/jordan-wright/email"
+	"order-api/pkg/sender"
 )
 
 
 type AuthService struct {
 	UserRepository *user.UserRepository
 	Config *configs.Config
+	Sender *sender.Sender
 }
 
-func NewAuthService(config *configs.Config, userRepository *user.UserRepository) *AuthService {
+type AuthServiceDeps struct {
+	UserRepository *user.UserRepository
+	Config *configs.Config
+	Sender *sender.Sender
+}
+
+func NewAuthService(deps AuthServiceDeps) *AuthService {
 	return &AuthService{
-		UserRepository: userRepository,
-		Config: config,
+		UserRepository: deps.UserRepository,
+		Config: deps.Config,
+		Sender: deps.Sender,
 	}
 }
 
@@ -70,75 +71,12 @@ func (service *AuthService) send(user *user.User) error {
 	fmt.Println(user.Code)
 
 	if user.Email != "" {
-		err := service.sendOnEmail(user.Email, user.Code)
+		subject := "Код подтверждения личности"
+		text := "Ваш персональный код подтверждения личности: " + user.Code + ". Не сообщайте никому данный код."
+		err := service.Sender.Email(user.Email, subject, text)
 		if err != nil {
 			return err
 		}
-	}
-	return nil
-}
-
-func (service *AuthService) sendOnEmail(emailAddr string, code string) error {
-	// Настроим письмо
-	e := email.NewEmail()
-	e.From = fmt.Sprintf("%s <%s>", service.Config.Sender.Name, service.Config.Sender.Email)
-	e.To = []string{emailAddr}
-	e.Subject = "Код подтверждения личности"
-	e.Text = []byte("Ваш персональный код подтверждения личности: " + code + ". Не сообщайте никому данный код.")
-
-	// Настройки SMTP
-	server := service.Config.Sender.Address
-	port := service.Config.Sender.Port
-	address := server + ":" + port
-	err := validate(server, port)
-	if err != nil {
-		return err
-	}
-	auth := smtp.PlainAuth("", service.Config.Sender.Email, service.Config.Sender.Password, server)
-
-	// // Настроим таймаут подключения
-	// dialer := &net.Dialer{
-	// 	Timeout:   10 * time.Second,
-	// 	KeepAlive: 10 * time.Second,
-	// }
-
-	// Настроим TLS
-	tlsConfig := &tls.Config{
-		ServerName: server,
-	}
-
-	conn, err := tls.Dial("tcp", address, tlsConfig)
-	if err != nil {
-	 return er.Wrap("Ошибка подключения", err)
-	}
-	defer conn.Close()
-   
-	// Создаем SMTP-клиент
-	client, err := smtp.NewClient(conn, server)
-	if err != nil {
-	 return er.Wrap("Ошибка создания клиента", err)
-	}
-	defer client.Quit()
-
-	// Аутентификация
-	if err = client.Auth(auth); err != nil {
-		return er.Wrap("Ошибка аутентификации", err)
-	}
-
-	// Отправляем письмо
-	if err = e.SendWithTLS(server+":"+port, auth, tlsConfig); err != nil {
-		return er.Wrap("Ошибка отправки письма", err)
-	}
-
-	return nil
-}
-
-func validate(server string, port string) error {
-	if server == "" {
-		return errors.New("server is not specified")
-	}
-	if port == "" {
-		return errors.New("port is not specified")
 	}
 	return nil
 }

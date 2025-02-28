@@ -10,6 +10,7 @@ import (
 	"order-api/internal/user"
 	"order-api/pkg/db"
 	"order-api/pkg/middleware"
+	"order-api/pkg/sender"
 )
 
 func main() {
@@ -32,6 +33,10 @@ func App() http.Handler {
 	}
 	router := http.NewServeMux()
 	db := db.NewDb(conf)
+	sender, err := sender.Load(conf)
+	if err != nil {
+		panic(err)
+	}
 
 	// Repositories
 	userRepository := user.NewUserRepository(db)
@@ -39,7 +44,11 @@ func App() http.Handler {
 	productRepository := product.NewProductRepository(db)
 
 	// Services
-	authService := auth.NewAuthService(conf, userRepository)
+	authService := auth.NewAuthService(auth.AuthServiceDeps{
+		UserRepository: userRepository,
+		Config: conf,
+		Sender: sender,
+	})
 	cartService := cart.NewCartService(cart.CartServiceDeps{
 		CartRepository: cartRepository,
 		ProductRepository: productRepository,
