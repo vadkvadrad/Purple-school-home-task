@@ -18,18 +18,18 @@ const (
 
 type ProductHandler struct {
 	Config *configs.Config
-	ProductRepository *ProductRepository
+	ProductService *ProductService
 }
 
 type ProductHandlerDeps struct {
 	Config      *configs.Config
-	ProductRepository *ProductRepository
+	ProductService *ProductService
 }
 
 func NewProductHandler(router *http.ServeMux, deps ProductHandlerDeps) {
 	handler := &ProductHandler{
 		Config:      deps.Config,
-		ProductRepository: deps.ProductRepository,
+		ProductService: deps.ProductService,
 	}
 
 	// Добавить продукт
@@ -56,7 +56,7 @@ func (handler *ProductHandler) Create() http.HandlerFunc {
 			return
 		}
 
-		product, err := handler.ProductRepository.Create(&Product{
+		product, err := handler.ProductService.Create(&Product{
 			Name: body.Name,
 			Description: body.Description,
 			Images: body.Images,
@@ -95,19 +95,13 @@ func (handler *ProductHandler) Update() http.HandlerFunc {
 			return
 		}
 
-		prod, err := handler.ProductRepository.FindById(id)
+		prod, err := handler.ProductService.GetByID(id)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 
-		// service logic 
-		if prod.Owner != phone {
-			http.Error(w, er.ErrWrongUserCredentials, http.StatusBadRequest)
-			return
-		}
-
-		prod, err = handler.ProductRepository.Update(&Product{
+		prod, err = handler.ProductService.Update(prod.Owner, &Product{
 			Model: gorm.Model{ID: uint(id)},
 			Name: body.Name,
 			Description: body.Description,
@@ -117,7 +111,7 @@ func (handler *ProductHandler) Update() http.HandlerFunc {
 			Owner: phone,
 		})
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		res.Json(w, prod, http.StatusOK)
@@ -142,7 +136,7 @@ func (handler *ProductHandler) Delete() http.HandlerFunc {
 		}
 
 		// Проверка на пользователя
-		prod, err := handler.ProductRepository.FindById(id)
+		prod, err := handler.ProductService.GetByID(id)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
@@ -155,9 +149,9 @@ func (handler *ProductHandler) Delete() http.HandlerFunc {
 		}
 
 		// Удаление продукта
-		err = handler.ProductRepository.Delete(id)
+		err = handler.ProductService.Delete(prod.Owner, phone, id)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 

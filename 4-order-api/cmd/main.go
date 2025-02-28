@@ -53,6 +53,9 @@ func App() http.Handler {
 		CartRepository: cartRepository,
 		ProductRepository: productRepository,
 	})
+	productService := product.NewProductService(product.ProductServiceDeps{
+		ProductRepository: productRepository,
+	})
 
 	// Handlers
 	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
@@ -66,7 +69,7 @@ func App() http.Handler {
 	})
 	product.NewProductHandler(router, product.ProductHandlerDeps{
 		Config: conf,
-		ProductRepository: productRepository,
+		ProductService: productService,
 	})
 
 	// Middleware
