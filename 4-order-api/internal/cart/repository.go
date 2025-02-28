@@ -41,15 +41,14 @@ func (repo *CartRepository) FindByID(id uint64) (*Cart, error) {
 	return cart, nil
 }
 
-func (repo *CartRepository) GetAll(limit, offset int) []Cart {
+func (repo *CartRepository) FindByPhone(phone string) []Cart {
 	var carts []Cart
 
 	repo.Database.
-		Table("links").
+		Table("carts").
 		Where("deleted_at is null").
+		Where("phone = ?", phone).
 		Order("id asc").
-		Limit(limit).
-		Offset(offset). 
 		Scan(&carts)
 	return carts
 }

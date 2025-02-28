@@ -110,7 +110,13 @@ func(handler *CartHandler) GetByID() http.HandlerFunc {
 
 func(handler *CartHandler) GetByPhone() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		
+		phone, ok := r.Context().Value(middleware.ContextPhoneKey).(string)
+		if !ok {
+			http.Error(w, er.ErrNotAuthorized, http.StatusUnauthorized)
+		}
+
+		carts := handler.CartService.GetByPhone(phone)
+		res.Json(w, carts, http.StatusOK)
 	}
 }
 

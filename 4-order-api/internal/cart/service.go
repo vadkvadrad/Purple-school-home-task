@@ -50,6 +50,6 @@ func (service *CartService) GetByIDAndPhone(id uint64, phone string) (*Cart, err
 	return cart, nil
 }
 
-func (service *CartService) GetByPhone(phone string, limit, offset int) []Cart {
-	return service.CartRepository.GetAll(limit, offset)
+func (service *CartService) GetByPhone(phone string) []Cart {
+	return service.CartRepository.FindByPhone(phone)
 }

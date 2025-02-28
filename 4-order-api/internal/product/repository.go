@@ -2,9 +2,6 @@ package product
 
 import (
 	"order-api/pkg/db"
-	"strconv"
-
-	"github.com/lib/pq"
 	"gorm.io/gorm/clause"
 )
 
@@ -51,33 +48,11 @@ func (repo *ProductRepository) FindById(id uint64) (*Product, error) {
 	return prod, nil
 }
 
-func (repo *ProductRepository) GetAll(limit, offset int) []Product {
-	var products []Product
-
-	repo.Database.
-		Table("products").
-		Where("deleted_at is null").
-		Order("id asc").
-		Limit(limit).
-		Offset(offset). 
-		Scan(&products)
-	return products
-}
-
-// должно быть в сервисе
-func (repo *ProductRepository) FindByIDs(cart pq.StringArray) ([]Product, error) {
-	products := make([]Product, len(cart))
-	for i, productId := range cart {
-		prodId, err := strconv.Atoi(productId)
-		if err != nil {
-			return nil, err
-		}
-		
-		product, err := repo.FindById(uint64(prodId))
-		if err != nil {
-			return nil, err
-		}
-		products[i] = *product
+func (repo *ProductRepository) FindByIdUnscoped(id uint64) (*Product, error) {
+	prod := &Product{}
+	result := repo.Database.Unscoped().Find(prod, id)
+	if result.Error != nil {
+		return nil, result.Error
 	}
-	return products, nil
+	return prod, nil
 }

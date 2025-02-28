@@ -3,6 +3,7 @@ package product
 import (
 	"errors"
 	"order-api/pkg/er"
+	"strconv"
 
 	"github.com/lib/pq"
 )
@@ -44,5 +45,18 @@ func (service *ProductService) Delete(owner, user string, id uint64) (error) {
 }
 
 func (service *ProductService) GetByIDs(cart pq.StringArray) ([]Product, error) {
-	return service.ProductRepository.FindByIDs(cart)
+	products := make([]Product, len(cart))
+	for i, productId := range cart {
+		prodId, err := strconv.Atoi(productId)
+		if err != nil {
+			return nil, err
+		}
+		
+		product, err := service.ProductRepository.FindByIdUnscoped(uint64(prodId))
+		if err != nil {
+			return nil, err
+		}
+		products[i] = *product
+	}
+	return products, nil
 }
