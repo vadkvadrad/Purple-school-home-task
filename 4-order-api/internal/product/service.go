@@ -3,6 +3,8 @@ package product
 import (
 	"errors"
 	"order-api/pkg/er"
+
+	"github.com/lib/pq"
 )
 
 type ProductService struct {
@@ -39,4 +41,8 @@ func (service *ProductService) Delete(owner, user string, id uint64) (error) {
 		return errors.New(er.ErrWrongUserCredentials)
 	}
 	return service.ProductRepository.Delete(id)
+}
+
+func (service *ProductService) GetByIDs(cart pq.StringArray) ([]Product, error) {
+	return service.ProductRepository.FindByIDs(cart)
 }

@@ -17,20 +17,20 @@ import (
 type CartHandler struct {
 	Config *configs.Config
 	CartService *CartService
-	ProductRepository *product.ProductRepository
+	ProductService *product.ProductService
 }
 
 type CartHandlerDeps struct {
 	Config *configs.Config
 	CartService *CartService
-	ProductRepository *product.ProductRepository
+	ProductService *product.ProductService
 }
 
 func NewCartHandler(router *http.ServeMux, deps CartHandlerDeps) {
 	handler := &CartHandler{
 		Config: deps.Config,
 		CartService: deps.CartService,
-		ProductRepository: deps.ProductRepository,
+		ProductService: deps.ProductService,
 	}
 
 	// Создание нового заказа
@@ -98,7 +98,7 @@ func(handler *CartHandler) GetByID() http.HandlerFunc {
 			return
 		}
 
-		products, err := handler.CartService.ProductRepository.GetByIDs(cart.Products)
+		products, err := handler.ProductService.GetByIDs(cart.Products)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

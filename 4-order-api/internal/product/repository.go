@@ -65,7 +65,7 @@ func (repo *ProductRepository) GetAll(limit, offset int) []Product {
 }
 
 // должно быть в сервисе
-func (repo *ProductRepository) GetByIDs(cart pq.StringArray) ([]Product, error) {
+func (repo *ProductRepository) FindByIDs(cart pq.StringArray) ([]Product, error) {
 	products := make([]Product, len(cart))
 	for i, productId := range cart {
 		prodId, err := strconv.Atoi(productId)
