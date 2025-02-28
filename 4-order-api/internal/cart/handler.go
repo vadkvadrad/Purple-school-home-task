@@ -173,6 +173,7 @@ func(handler *CartHandler) Delete() http.HandlerFunc {
 			return
 		}
 
+		// Удаление данных
 		deletedCart, err := handler.CartService.Delete(id, phone)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
