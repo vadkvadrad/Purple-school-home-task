@@ -11,9 +11,8 @@ type User struct {
 	Phone     string `json:"phone"`
 	Email     string `json:"email"`
 	SessionId string `json:"session_id" gorm:"uniqueIndex"`
-	Code string `json:"code"`
+	Code      string `json:"code"`
 }
-
 
 func (u *User) Generate() {
 	u.SessionId = randLettersRunes(10)

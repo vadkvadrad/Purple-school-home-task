@@ -37,7 +37,7 @@ func (service *ProductService) Update(phone string, prod *Product) (*Product, er
 	return service.ProductRepository.Update(prod)
 }
 
-func (service *ProductService) Delete(owner, user string, id uint64) (error) {
+func (service *ProductService) Delete(owner, user string, id uint64) error {
 	if owner != user {
 		return errors.New(er.ErrWrongUserCredentials)
 	}
@@ -51,7 +51,7 @@ func (service *ProductService) GetByIDs(cart pq.StringArray) ([]Product, error) 
 		if err != nil {
 			return nil, err
 		}
-		
+
 		product, err := service.ProductRepository.FindByIdUnscoped(uint64(prodId))
 		if err != nil {
 			return nil, err

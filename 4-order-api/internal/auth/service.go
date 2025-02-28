@@ -7,24 +7,23 @@ import (
 	"order-api/pkg/sender"
 )
 
-
 type AuthService struct {
 	UserRepository *user.UserRepository
-	Config *configs.Config
-	Sender *sender.Sender
+	Config         *configs.Config
+	Sender         *sender.Sender
 }
 
 type AuthServiceDeps struct {
 	UserRepository *user.UserRepository
-	Config *configs.Config
-	Sender *sender.Sender
+	Config         *configs.Config
+	Sender         *sender.Sender
 }
 
 func NewAuthService(deps AuthServiceDeps) *AuthService {
 	return &AuthService{
 		UserRepository: deps.UserRepository,
-		Config: deps.Config,
-		Sender: deps.Sender,
+		Config:         deps.Config,
+		Sender:         deps.Sender,
 	}
 }
 
@@ -51,7 +50,9 @@ func (service *AuthService) Login(phone, email string) (string, error) {
 		}
 
 		err = service.send(&createdUser)
-		if err != nil {return "", err}
+		if err != nil {
+			return "", err
+		}
 		return createdUser.SessionId, nil
 	}
 	existedUser.Email = email

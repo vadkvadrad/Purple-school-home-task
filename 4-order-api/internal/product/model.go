@@ -11,10 +11,10 @@ const (
 
 type Product struct {
 	gorm.Model
-	Name string `json:"name"`
-	Description string `json:"description"`
-	Images pq.StringArray `json:"images" gorm:"type:text"`
-	Price int `json:"price"`
-	Currency string `json:"currency"`
-	Owner string `json:"owner"`
+	Name        string         `json:"name"`
+	Description string         `json:"description"`
+	Images      pq.StringArray `json:"images" gorm:"type:text"`
+	Price       int            `json:"price"`
+	Currency    string         `json:"currency"`
+	Owner       string         `json:"owner"`
 }

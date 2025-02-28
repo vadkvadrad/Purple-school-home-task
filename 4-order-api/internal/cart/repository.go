@@ -30,9 +30,9 @@ func (repo *CartRepository) Update(cart *Cart) (*Cart, error) {
 		return nil, result.Error
 	}
 	return cart, nil
-} 
+}
 
-func (repo *CartRepository) Delete(id uint64) (error) {
+func (repo *CartRepository) Delete(id uint64) error {
 	result := repo.Database.Delete(&Cart{}, id)
 	if result.Error != nil {
 		return result.Error

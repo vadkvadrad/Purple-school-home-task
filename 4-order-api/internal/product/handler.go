@@ -17,18 +17,18 @@ const (
 )
 
 type ProductHandler struct {
-	Config *configs.Config
+	Config         *configs.Config
 	ProductService *ProductService
 }
 
 type ProductHandlerDeps struct {
-	Config      *configs.Config
+	Config         *configs.Config
 	ProductService *ProductService
 }
 
 func NewProductHandler(router *http.ServeMux, deps ProductHandlerDeps) {
 	handler := &ProductHandler{
-		Config:      deps.Config,
+		Config:         deps.Config,
 		ProductService: deps.ProductService,
 	}
 
@@ -57,22 +57,21 @@ func (handler *ProductHandler) Create() http.HandlerFunc {
 		}
 
 		product, err := handler.ProductService.Create(&Product{
-			Name: body.Name,
+			Name:        body.Name,
 			Description: body.Description,
-			Images: body.Images,
-			Price: body.Price,
-			Currency: CurrencyRUB,
-			Owner: phone,
+			Images:      body.Images,
+			Price:       body.Price,
+			Currency:    CurrencyRUB,
+			Owner:       phone,
 		})
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return 
+			return
 		}
 		res.Json(w, product, http.StatusCreated)
 	}
 }
-
 
 func (handler *ProductHandler) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -102,13 +101,13 @@ func (handler *ProductHandler) Update() http.HandlerFunc {
 		}
 
 		prod, err = handler.ProductService.Update(prod.Owner, &Product{
-			Model: gorm.Model{ID: uint(id)},
-			Name: body.Name,
+			Model:       gorm.Model{ID: uint(id)},
+			Name:        body.Name,
 			Description: body.Description,
-			Images: body.Images,
-			Price: body.Price,
-			Currency: CurrencyRUB,
-			Owner: phone,
+			Images:      body.Images,
+			Price:       body.Price,
+			Currency:    CurrencyRUB,
+			Owner:       phone,
 		})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -117,7 +116,6 @@ func (handler *ProductHandler) Update() http.HandlerFunc {
 		res.Json(w, prod, http.StatusOK)
 	}
 }
-
 
 func (handler *ProductHandler) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

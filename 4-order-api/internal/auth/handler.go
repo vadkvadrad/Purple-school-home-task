@@ -10,18 +10,18 @@ import (
 
 type AuthHandler struct {
 	AuthService *AuthService
-	Config *configs.Config
+	Config      *configs.Config
 }
 
 type AuthHandlerDeps struct {
 	AuthService *AuthService
-	Config *configs.Config
+	Config      *configs.Config
 }
 
 func NewAuthHandler(router *http.ServeMux, deps AuthHandlerDeps) {
 	handler := &AuthHandler{
 		AuthService: deps.AuthService,
-		Config: deps.Config,
+		Config:      deps.Config,
 	}
 
 	router.HandleFunc("POST /auth/login", handler.Login())
@@ -65,7 +65,7 @@ func (handler *AuthHandler) Verify() http.HandlerFunc {
 
 		if user.Code != body.Code {
 			res.Json(w, "wrong authorization code", http.StatusUnauthorized)
-			return 
+			return
 		}
 
 		jwtCreator := jwt.NewJwt(handler.Config.Auth.Secret)
@@ -76,10 +76,10 @@ func (handler *AuthHandler) Verify() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		
+
 		data := &VerifyResponse{
 			Token: token,
-		} 
+		}
 		res.Json(w, data, http.StatusOK)
 	}
 }

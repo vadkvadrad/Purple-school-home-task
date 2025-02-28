@@ -16,21 +16,21 @@ import (
 )
 
 type CartHandler struct {
-	Config *configs.Config
-	CartService *CartService
+	Config         *configs.Config
+	CartService    *CartService
 	ProductService *product.ProductService
 }
 
 type CartHandlerDeps struct {
-	Config *configs.Config
-	CartService *CartService
+	Config         *configs.Config
+	CartService    *CartService
 	ProductService *product.ProductService
 }
 
 func NewCartHandler(router *http.ServeMux, deps CartHandlerDeps) {
 	handler := &CartHandler{
-		Config: deps.Config,
-		CartService: deps.CartService,
+		Config:         deps.Config,
+		CartService:    deps.CartService,
 		ProductService: deps.ProductService,
 	}
 
@@ -50,7 +50,6 @@ func NewCartHandler(router *http.ServeMux, deps CartHandlerDeps) {
 	router.Handle("DELETE /order/{id}", middleware.IsAuthed(handler.Delete(), handler.Config))
 }
 
-
 func (handler *CartHandler) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		phone, ok := r.Context().Value(middleware.ContextPhoneKey).(string)
@@ -66,9 +65,9 @@ func (handler *CartHandler) Create() http.HandlerFunc {
 		}
 
 		cart, err := handler.CartService.Create(&Cart{
-			Phone: phone,
+			Phone:    phone,
 			Products: body.Products,
-			Date: datatypes.Date(time.Now()),
+			Date:     datatypes.Date(time.Now()),
 		})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -78,7 +77,7 @@ func (handler *CartHandler) Create() http.HandlerFunc {
 	}
 }
 
-func(handler *CartHandler) GetByID() http.HandlerFunc {
+func (handler *CartHandler) GetByID() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		phone, ok := r.Context().Value(middleware.ContextPhoneKey).(string)
 		if !ok {
@@ -109,7 +108,7 @@ func(handler *CartHandler) GetByID() http.HandlerFunc {
 	}
 }
 
-func(handler *CartHandler) GetByPhone() http.HandlerFunc {
+func (handler *CartHandler) GetByPhone() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		phone, ok := r.Context().Value(middleware.ContextPhoneKey).(string)
 		if !ok {
@@ -121,7 +120,7 @@ func(handler *CartHandler) GetByPhone() http.HandlerFunc {
 	}
 }
 
-func(handler *CartHandler) Update() http.HandlerFunc {
+func (handler *CartHandler) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Получение данных
 		phone, ok := r.Context().Value(middleware.ContextPhoneKey).(string)
@@ -144,10 +143,10 @@ func(handler *CartHandler) Update() http.HandlerFunc {
 
 		// Обновление в базе данных
 		updatedCart, err := handler.CartService.Update(id, &Cart{
-			Model: gorm.Model{ID: uint(id)},
-			Phone: phone,
+			Model:    gorm.Model{ID: uint(id)},
+			Phone:    phone,
 			Products: body.Products,
-			Date: datatypes.Date(time.Now()),
+			Date:     datatypes.Date(time.Now()),
 		})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -158,7 +157,7 @@ func(handler *CartHandler) Update() http.HandlerFunc {
 	}
 }
 
-func(handler *CartHandler) Delete() http.HandlerFunc {
+func (handler *CartHandler) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Получение данных
 		phone, ok := r.Context().Value(middleware.ContextPhoneKey).(string)

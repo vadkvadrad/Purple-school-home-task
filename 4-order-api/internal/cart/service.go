@@ -20,7 +20,7 @@ type CartServiceDeps struct {
 
 func NewCartService(deps CartServiceDeps) *CartService {
 	return &CartService{
-		CartRepository: deps.CartRepository,
+		CartRepository:    deps.CartRepository,
 		ProductRepository: deps.ProductRepository,
 	}
 }

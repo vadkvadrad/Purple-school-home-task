@@ -11,8 +11,8 @@ import (
 )
 
 type Config struct {
-	Db DbConfig
-	Auth AuthConfig
+	Db     DbConfig
+	Auth   AuthConfig
 	Sender SenderConfig
 }
 
@@ -25,11 +25,11 @@ type AuthConfig struct {
 }
 
 type SenderConfig struct {
-	Email string
+	Email    string
 	Password string
-	Name string
-	Address string
-	Port string
+	Name     string
+	Address  string
+	Port     string
 }
 
 func Load() (*Config, error) {
@@ -38,40 +38,40 @@ func Load() (*Config, error) {
 		log.Println("Error loading .env file, using default config.", "Error:", err.Error())
 	}
 	config := &Config{
-        Db: DbConfig{
-            Dsn: getEnv("DSN", ""),
-        },
+		Db: DbConfig{
+			Dsn: getEnv("DSN", ""),
+		},
 		Auth: AuthConfig{
 			Secret: getEnv("SECRET", ""),
 		},
 		Sender: SenderConfig{
-            Email:    getEnv("EMAIL", ""),
-            Password: getEnv("PASSWORD", ""),
-            Name:     getEnv("NAME", "Default Sender"),
-            Address:  getEnv("ADDRESS", "smtp.mail.ru"),
-            Port:     getEnv("PORT", "465"),
-        },
-    }
+			Email:    getEnv("EMAIL", ""),
+			Password: getEnv("PASSWORD", ""),
+			Name:     getEnv("NAME", "Default Sender"),
+			Address:  getEnv("ADDRESS", "smtp.mail.ru"),
+			Port:     getEnv("PORT", "465"),
+		},
+	}
 
-    if err := config.validate(); err != nil {
-        return nil, err
-    }
+	if err := config.validate(); err != nil {
+		return nil, err
+	}
 
-    return config, nil
+	return config, nil
 }
 
 func (c *Config) validate() error {
-    if c.Db.Dsn == "" {
-        return errors.New("DSN is required")
-    }
-    return nil
+	if c.Db.Dsn == "" {
+		return errors.New("DSN is required")
+	}
+	return nil
 }
 
 func getEnv(key, fallback string) string {
-    if value, ok := os.LookupEnv(key); ok {
-        return value
-    }
-    return fallback
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
 }
 
 func dir(envFile string) string {

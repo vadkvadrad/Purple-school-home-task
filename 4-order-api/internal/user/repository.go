@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	EmailKey = "email"
-	PhoneKey = "phone"
+	EmailKey     = "email"
+	PhoneKey     = "phone"
 	SessionIdKey = "session_id"
 )
 
@@ -29,7 +29,7 @@ func (repo *UserRepository) Create(user *User) (*User, error) {
 		return nil, result.Error
 	}
 	return user, nil
-} 
+}
 
 func (repo *UserRepository) Update(user *User) (*User, error) {
 	result := repo.Db.Clauses(clause.Returning{}).Updates(user)
@@ -37,7 +37,7 @@ func (repo *UserRepository) Update(user *User) (*User, error) {
 		return nil, result.Error
 	}
 	return user, nil
-} 
+}
 
 func (repo *UserRepository) FindByKey(key, data string) (*User, error) {
 	var user User

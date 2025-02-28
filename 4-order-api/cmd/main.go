@@ -17,14 +17,13 @@ func main() {
 	app := App()
 
 	server := http.Server{
-		Addr: ":8081",
+		Addr:    ":8081",
 		Handler: app,
 	}
 
 	fmt.Println("server started on port", server.Addr)
 	server.ListenAndServe()
 }
-
 
 func App() http.Handler {
 	conf, err := configs.Load()
@@ -46,11 +45,11 @@ func App() http.Handler {
 	// Services
 	authService := auth.NewAuthService(auth.AuthServiceDeps{
 		UserRepository: userRepository,
-		Config: conf,
-		Sender: sender,
+		Config:         conf,
+		Sender:         sender,
 	})
 	cartService := cart.NewCartService(cart.CartServiceDeps{
-		CartRepository: cartRepository,
+		CartRepository:    cartRepository,
 		ProductRepository: productRepository,
 	})
 	productService := product.NewProductService(product.ProductServiceDeps{
@@ -59,16 +58,16 @@ func App() http.Handler {
 
 	// Handlers
 	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
-		Config: conf,
+		Config:      conf,
 		AuthService: authService,
 	})
 	cart.NewCartHandler(router, cart.CartHandlerDeps{
-		Config: conf,
-		CartService: cartService,
+		Config:         conf,
+		CartService:    cartService,
 		ProductService: productService,
 	})
 	product.NewProductHandler(router, product.ProductHandlerDeps{
-		Config: conf,
+		Config:         conf,
 		ProductService: productService,
 	})
 

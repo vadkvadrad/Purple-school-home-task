@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	ErrNotAuthorized = "user are not authorized"
+	ErrNotAuthorized        = "user are not authorized"
 	ErrWrongUserCredentials = "wrong user credentials"
 )
 

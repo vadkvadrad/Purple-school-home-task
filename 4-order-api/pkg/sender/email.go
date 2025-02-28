@@ -12,12 +12,12 @@ import (
 )
 
 type Sender struct {
-	Config *configs.Config
-	Server string
-	Port string
-	Address string
+	Config    *configs.Config
+	Server    string
+	Port      string
+	Address   string
 	TlsConfig *tls.Config
-	Auth smtp.Auth
+	Auth      smtp.Auth
 }
 
 func Load(conf *configs.Config) (*Sender, error) {
@@ -61,12 +61,12 @@ func Load(conf *configs.Config) (*Sender, error) {
 	}
 
 	return &Sender{
-		Config: conf,
-		Server: server,
-		Port: port,
-		Address: address,
+		Config:    conf,
+		Server:    server,
+		Port:      port,
+		Address:   address,
 		TlsConfig: tlsConfig,
-		Auth: auth,
+		Auth:      auth,
 	}, nil
 }
 
