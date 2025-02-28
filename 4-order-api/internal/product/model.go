@@ -17,4 +17,5 @@ type Product struct {
 	Price       int            `json:"price"`
 	Currency    string         `json:"currency"`
 	Owner       string         `json:"owner"`
+	Carts       pq.Int64Array  `json:"carts" gorm:"type:text"`
 }

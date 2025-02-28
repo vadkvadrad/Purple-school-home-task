@@ -6,6 +6,8 @@ import (
 	"order-api/internal/product"
 	"order-api/pkg/er"
 	"strconv"
+
+	"gorm.io/gorm"
 )
 
 type CartService struct {
@@ -26,17 +28,46 @@ func NewCartService(deps CartServiceDeps) *CartService {
 }
 
 func (service *CartService) Create(cart *Cart) (*Cart, error) {
-	for _, id := range cart.Products {
+	ids := make([]uint, len(cart.Products))
+	products := make([]product.Product, len(cart.Products))
+
+	// Проверяем существуют ли все выбранные продукты
+	for i, id := range cart.Products {
 		val, err := strconv.Atoi(id)
 		if err != nil {
 			return nil, err
 		}
-		_, err = service.ProductRepository.FindById(uint64(val))
+		prod, err := service.ProductRepository.FindById(uint64(val))
 		if err != nil {
 			return nil, er.Wrap(fmt.Sprintf("product №%s", id), err)
 		}
+		ids[i] = uint(val)
+		products[i] = *prod
 	}
-	return service.CartRepository.Create(cart)
+
+	// Создаем запись в базе данных
+	createdCart, err := service.CartRepository.Create(cart)
+	if err != nil {
+		return nil, err
+	}
+
+	// Обновляем продукты, добавляя id заказа в продукт
+	for i, id := range ids {
+		prod := products[i]
+		carts := prod.Carts
+		carts = append(carts, int64(createdCart.ID))
+		service.ProductRepository.Update(&product.Product{
+			Model:       gorm.Model{ID: id},
+			Name:        prod.Name,
+			Description: prod.Description,
+			Images:      prod.Images,
+			Price:       prod.Price,
+			Currency:    prod.Currency,
+			Owner:       prod.Owner,
+			Carts:       carts,
+		})
+	}
+	return createdCart, nil
 }
 
 func (service *CartService) GetByID(id uint64, phone string) (*Cart, error) {
