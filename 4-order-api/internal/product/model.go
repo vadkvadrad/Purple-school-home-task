@@ -32,6 +32,11 @@ func (prod *Product) CartRemove(idToRemove int64) {
 
 func (prod *Product) CartAdd(idToAdd int64) {
 	carts := prod.Carts
+	for _, val := range prod.Carts {
+		if val == idToAdd {
+			return
+		}
+	}
 	carts = append(carts, idToAdd)
 	prod.Carts = carts
 }

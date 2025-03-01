@@ -70,7 +70,7 @@ func (handler *CartHandler) Create() http.HandlerFunc {
 			Date:     datatypes.Date(time.Now()),
 		})
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 		res.Json(w, cart, http.StatusCreated)

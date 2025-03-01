@@ -61,17 +61,13 @@ func (service *CartService) GetByPhone(phone string) []Cart {
 }
 
 func (service *CartService) Update(id uint64, newCart *Cart) (*Cart, error) {
-	// Поиск и обновление заказа
+	// Поиск заказа
 	cart, err := service.CartRepository.FindByID(id)
 	if err != nil {
 		return nil, err
 	}
 	if cart.Phone != newCart.Phone {
 		return nil, errors.New(er.ErrWrongUserCredentials)
-	}
-	cart, err = service.CartRepository.Update(newCart)
-	if err != nil {
-		return nil, err
 	}
 
 	// Получение старых продуктов
@@ -82,6 +78,12 @@ func (service *CartService) Update(id uint64, newCart *Cart) (*Cart, error) {
 
 	// Получение новых продуктов
 	newProducts, err := service.ProductRepository.FindByIds(newCart.Products)
+	if err != nil {
+		return nil, err
+	}
+
+	// Обновление продуктов у заказа
+	cart, err = service.CartRepository.Update(newCart)
 	if err != nil {
 		return nil, err
 	}
