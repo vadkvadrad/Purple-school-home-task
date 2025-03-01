@@ -75,6 +75,7 @@ func (handler *ProductHandler) Create() http.HandlerFunc {
 
 func (handler *ProductHandler) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Получение данных
 		phone, ok := r.Context().Value(middleware.ContextPhoneKey).(string)
 		if !ok {
 			http.Error(w, er.ErrNotAuthorized, http.StatusUnauthorized)
@@ -94,12 +95,16 @@ func (handler *ProductHandler) Update() http.HandlerFunc {
 			return
 		}
 
+
+		// Получение продукта
 		prod, err := handler.ProductService.GetByID(id)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 
+
+		// Обновление продукта
 		prod, err = handler.ProductService.Update(prod.Owner, &Product{
 			Model:       gorm.Model{ID: uint(id)},
 			Name:        body.Name,
@@ -133,18 +138,14 @@ func (handler *ProductHandler) Delete() http.HandlerFunc {
 			return
 		}
 
-		// Проверка на пользователя
+
+		// Получение продукта
 		prod, err := handler.ProductService.GetByID(id)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-
-		// Service logic
-		if prod.Owner != phone {
-			http.Error(w, er.ErrWrongUserCredentials, http.StatusBadRequest)
-			return
-		}
+		
 
 		// Удаление продукта
 		err = handler.ProductService.Delete(prod.Owner, phone, id)

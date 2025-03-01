@@ -3,7 +3,6 @@ package product
 import (
 	"errors"
 	"order-api/pkg/er"
-	"strconv"
 
 	"github.com/lib/pq"
 )
@@ -44,15 +43,12 @@ func (service *ProductService) Delete(owner, user string, id uint64) error {
 	return service.ProductRepository.Delete(id)
 }
 
-func (service *ProductService) GetByIDs(cart pq.StringArray) ([]Product, error) {
-	products := make([]Product, len(cart))
-	for i, productId := range cart {
-		prodId, err := strconv.Atoi(productId)
-		if err != nil {
-			return nil, err
-		}
 
-		product, err := service.ProductRepository.FindByIdUnscoped(uint64(prodId))
+// GetByIDs находит все продукты, даже с меткой удалено
+func (service *ProductService) GetByIDs(cart pq.Int64Array) ([]Product, error) {
+	products := make([]Product, len(cart))
+	for i, id := range cart {
+		product, err := service.ProductRepository.FindByIdUnscoped(uint64(id))
 		if err != nil {
 			return nil, err
 		}

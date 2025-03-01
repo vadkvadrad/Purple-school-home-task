@@ -2,12 +2,8 @@ package cart
 
 import (
 	"errors"
-	"fmt"
 	"order-api/internal/product"
 	"order-api/pkg/er"
-	"strconv"
-
-	"gorm.io/gorm"
 )
 
 type CartService struct {
@@ -28,21 +24,10 @@ func NewCartService(deps CartServiceDeps) *CartService {
 }
 
 func (service *CartService) Create(cart *Cart) (*Cart, error) {
-	ids := make([]uint, len(cart.Products))
-	products := make([]product.Product, len(cart.Products))
-
 	// Проверяем существуют ли все выбранные продукты
-	for i, id := range cart.Products {
-		val, err := strconv.Atoi(id)
-		if err != nil {
-			return nil, err
-		}
-		prod, err := service.ProductRepository.FindById(uint64(val))
-		if err != nil {
-			return nil, er.Wrap(fmt.Sprintf("product №%s", id), err)
-		}
-		ids[i] = uint(val)
-		products[i] = *prod
+	products, err := service.ProductRepository.FindByIds(cart.Products)
+	if err != nil {
+		return nil, err
 	}
 
 	// Создаем запись в базе данных
@@ -51,22 +36,12 @@ func (service *CartService) Create(cart *Cart) (*Cart, error) {
 		return nil, err
 	}
 
-	// Обновляем продукты, добавляя id заказа в продукт
-	for i, id := range ids {
-		prod := products[i]
-		carts := prod.Carts
-		carts = append(carts, int64(createdCart.ID))
-		service.ProductRepository.Update(&product.Product{
-			Model:       gorm.Model{ID: id},
-			Name:        prod.Name,
-			Description: prod.Description,
-			Images:      prod.Images,
-			Price:       prod.Price,
-			Currency:    prod.Currency,
-			Owner:       prod.Owner,
-			Carts:       carts,
-		})
+	// Создаем метку у продуктов
+	err = service.ProductRepository.AddMark(products, uint64(createdCart.ID))
+	if err != nil {
+		return nil, err
 	}
+
 	return createdCart, nil
 }
 
@@ -86,6 +61,7 @@ func (service *CartService) GetByPhone(phone string) []Cart {
 }
 
 func (service *CartService) Update(id uint64, newCart *Cart) (*Cart, error) {
+	// Поиск и обновление заказа
 	cart, err := service.CartRepository.FindByID(id)
 	if err != nil {
 		return nil, err
@@ -97,10 +73,36 @@ func (service *CartService) Update(id uint64, newCart *Cart) (*Cart, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Получение старых продуктов
+	oldProducts, err := service.ProductRepository.FindByIds(cart.Products)
+	if err != nil {
+		return nil, err
+	}
+
+	// Получение новых продуктов
+	newProducts, err := service.ProductRepository.FindByIds(newCart.Products)
+	if err != nil {
+		return nil, err
+	}
+
+	// Удаление старых меток у продуктов
+	err = service.ProductRepository.DeleteMark(oldProducts, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// Добавление новых меток продуктам
+	err = service.ProductRepository.AddMark(newProducts, id)
+	if err != nil {
+		return nil, err
+	}
+
 	return cart, nil
 }
 
 func (service *CartService) Delete(id uint64, phone string) (*Cart, error) {
+	// Логика поиска и удаления заказа
 	cart, err := service.CartRepository.FindByID(id)
 	if err != nil {
 		return nil, err
@@ -109,6 +111,18 @@ func (service *CartService) Delete(id uint64, phone string) (*Cart, error) {
 		return nil, errors.New(er.ErrWrongUserCredentials)
 	}
 	err = service.CartRepository.Delete(id)
+	if err != nil {
+		return nil, err
+	}
+
+	// Получение всех продуктов
+	products, err := service.ProductRepository.FindByIds(cart.Products)
+	if err != nil {
+		return nil, err
+	}
+
+	// Удаление метки в продукте
+	err = service.ProductRepository.DeleteMark(products, id)
 	if err != nil {
 		return nil, err
 	}
