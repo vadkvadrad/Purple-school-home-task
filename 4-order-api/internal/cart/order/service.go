@@ -1,19 +1,20 @@
-package cart
+package order
 
 import (
 	"errors"
+	"order-api/internal/cart"
 	"order-api/internal/product"
 	"order-api/pkg/er"
 )
 
 type CartService struct {
-	CartRepository    *CartRepository
-	ProductRepository *product.ProductRepository
+	CartRepository    cart.ICartRepository
+	ProductRepository product.IProductRepository
 }
 
 type CartServiceDeps struct {
-	CartRepository    *CartRepository
-	ProductRepository *product.ProductRepository
+	CartRepository    cart.ICartRepository
+	ProductRepository product.IProductRepository
 }
 
 func NewCartService(deps CartServiceDeps) *CartService {
@@ -23,7 +24,7 @@ func NewCartService(deps CartServiceDeps) *CartService {
 	}
 }
 
-func (service *CartService) Create(cart *Cart) (*Cart, error) {
+func (service *CartService) Create(cart *cart.Cart) (*cart.Cart, error) {
 	// Проверяем существуют ли все выбранные продукты
 	products, err := service.ProductRepository.FindByIds(cart.Products)
 	if err != nil {
@@ -45,7 +46,7 @@ func (service *CartService) Create(cart *Cart) (*Cart, error) {
 	return createdCart, nil
 }
 
-func (service *CartService) GetByID(id uint64, phone string) (*Cart, error) {
+func (service *CartService) GetByID(id uint64, phone string) (*cart.Cart, error) {
 	cart, err := service.CartRepository.FindByID(id)
 	if err != nil {
 		return nil, err
@@ -56,11 +57,11 @@ func (service *CartService) GetByID(id uint64, phone string) (*Cart, error) {
 	return cart, nil
 }
 
-func (service *CartService) GetByPhone(phone string) []Cart {
+func (service *CartService) GetByPhone(phone string) []cart.Cart {
 	return service.CartRepository.FindByPhone(phone)
 }
 
-func (service *CartService) Update(id uint64, newCart *Cart) (*Cart, error) {
+func (service *CartService) Update(id uint64, newCart *cart.Cart) (*cart.Cart, error) {
 	// Поиск заказа
 	cart, err := service.CartRepository.FindByID(id)
 	if err != nil {
@@ -103,7 +104,7 @@ func (service *CartService) Update(id uint64, newCart *Cart) (*Cart, error) {
 	return cart, nil
 }
 
-func (service *CartService) Delete(id uint64, phone string) (*Cart, error) {
+func (service *CartService) Delete(id uint64, phone string) (*cart.Cart, error) {
 	// Логика поиска и удаления заказа
 	cart, err := service.CartRepository.FindByID(id)
 	if err != nil {

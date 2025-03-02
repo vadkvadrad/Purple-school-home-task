@@ -1,8 +1,9 @@
-package product
+package prod
 
 import (
 	"net/http"
 	"order-api/configs"
+	"order-api/internal/product"
 	"order-api/pkg/er"
 	"order-api/pkg/middleware"
 	"order-api/pkg/req"
@@ -18,12 +19,12 @@ const (
 
 type ProductHandler struct {
 	Config         *configs.Config
-	ProductService *ProductService
+	ProductService product.IProductService
 }
 
 type ProductHandlerDeps struct {
 	Config         *configs.Config
-	ProductService *ProductService
+	ProductService product.IProductService
 }
 
 func NewProductHandler(router *http.ServeMux, deps ProductHandlerDeps) {
@@ -56,12 +57,12 @@ func (handler *ProductHandler) Create() http.HandlerFunc {
 			return
 		}
 
-		product, err := handler.ProductService.Create(&Product{
+		product, err := handler.ProductService.Create(&product.Product{
 			Name:        body.Name,
 			Description: body.Description,
 			Images:      body.Images,
 			Price:       body.Price,
-			Currency:    CurrencyRUB,
+			Currency:    product.CurrencyRUB,
 			Owner:       phone,
 		})
 
@@ -95,7 +96,6 @@ func (handler *ProductHandler) Update() http.HandlerFunc {
 			return
 		}
 
-
 		// Получение продукта
 		prod, err := handler.ProductService.GetByID(id)
 		if err != nil {
@@ -103,16 +103,16 @@ func (handler *ProductHandler) Update() http.HandlerFunc {
 			return
 		}
 
-
 		// Обновление продукта
-		prod, err = handler.ProductService.Update(prod.Owner, &Product{
+		prod, err = handler.ProductService.Update(prod.Owner, &product.Product{
 			Model:       gorm.Model{ID: uint(id)},
 			Name:        body.Name,
 			Description: body.Description,
 			Images:      body.Images,
 			Price:       body.Price,
-			Currency:    CurrencyRUB,
+			Currency:    product.CurrencyRUB,
 			Owner:       phone,
+			Carts:       prod.Carts,
 		})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -138,14 +138,12 @@ func (handler *ProductHandler) Delete() http.HandlerFunc {
 			return
 		}
 
-
 		// Получение продукта
 		prod, err := handler.ProductService.GetByID(id)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-		
 
 		// Удаление продукта
 		err = handler.ProductService.Delete(prod.Owner, phone, id)

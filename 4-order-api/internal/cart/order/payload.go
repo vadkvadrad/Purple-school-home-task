@@ -1,4 +1,4 @@
-package cart
+package order
 
 import "github.com/lib/pq"
 

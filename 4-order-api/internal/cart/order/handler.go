@@ -1,8 +1,9 @@
-package cart
+package order
 
 import (
 	"net/http"
 	"order-api/configs"
+	"order-api/internal/cart"
 	"order-api/internal/product"
 	"order-api/pkg/er"
 	"order-api/pkg/middleware"
@@ -17,14 +18,14 @@ import (
 
 type CartHandler struct {
 	Config         *configs.Config
-	CartService    *CartService
-	ProductService *product.ProductService
+	CartService    cart.ICartService
+	ProductService product.IProductService
 }
 
 type CartHandlerDeps struct {
 	Config         *configs.Config
-	CartService    *CartService
-	ProductService *product.ProductService
+	CartService    cart.ICartService
+	ProductService  product.IProductService
 }
 
 func NewCartHandler(router *http.ServeMux, deps CartHandlerDeps) {
@@ -64,7 +65,7 @@ func (handler *CartHandler) Create() http.HandlerFunc {
 			return
 		}
 
-		cart, err := handler.CartService.Create(&Cart{
+		cart, err := handler.CartService.Create(&cart.Cart{
 			Phone:    phone,
 			Products: body.Products,
 			Date:     datatypes.Date(time.Now()),
@@ -142,7 +143,7 @@ func (handler *CartHandler) Update() http.HandlerFunc {
 		}
 
 		// Обновление в базе данных
-		updatedCart, err := handler.CartService.Update(id, &Cart{
+		updatedCart, err := handler.CartService.Update(id, &cart.Cart{
 			Model:    gorm.Model{ID: uint(id)},
 			Phone:    phone,
 			Products: body.Products,

@@ -1,6 +1,7 @@
-package cart
+package order
 
 import (
+	"order-api/internal/cart"
 	"order-api/pkg/db"
 
 	"gorm.io/gorm/clause"
@@ -16,7 +17,7 @@ func NewCartRepository(db *db.Db) *CartRepository {
 	}
 }
 
-func (repo *CartRepository) Create(cart *Cart) (*Cart, error) {
+func (repo *CartRepository) Create(cart *cart.Cart) (*cart.Cart, error) {
 	result := repo.Database.Create(cart)
 	if result.Error != nil {
 		return nil, result.Error
@@ -24,7 +25,7 @@ func (repo *CartRepository) Create(cart *Cart) (*Cart, error) {
 	return cart, nil
 }
 
-func (repo *CartRepository) Update(cart *Cart) (*Cart, error) {
+func (repo *CartRepository) Update(cart *cart.Cart) (*cart.Cart, error) {
 	result := repo.Database.Clauses(clause.Returning{}).Updates(cart)
 	if result.Error != nil {
 		return nil, result.Error
@@ -33,15 +34,15 @@ func (repo *CartRepository) Update(cart *Cart) (*Cart, error) {
 }
 
 func (repo *CartRepository) Delete(id uint64) error {
-	result := repo.Database.Delete(&Cart{}, id)
+	result := repo.Database.Delete(&cart.Cart{}, id)
 	if result.Error != nil {
 		return result.Error
 	}
 	return nil
 }
 
-func (repo *CartRepository) FindByID(id uint64) (*Cart, error) {
-	cart := &Cart{}
+func (repo *CartRepository) FindByID(id uint64) (*cart.Cart, error) {
+	cart := &cart.Cart{}
 	result := repo.Database.First(cart, "id = ?", id)
 	if result.Error != nil {
 		return nil, result.Error
@@ -49,8 +50,8 @@ func (repo *CartRepository) FindByID(id uint64) (*Cart, error) {
 	return cart, nil
 }
 
-func (repo *CartRepository) FindByPhone(phone string) []Cart {
-	var carts []Cart
+func (repo *CartRepository) FindByPhone(phone string) []cart.Cart {
+	var carts []cart.Cart
 
 	repo.Database.
 		Table("carts").

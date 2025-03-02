@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"order-api/configs"
 	"order-api/internal/auth"
-	"order-api/internal/cart"
-	"order-api/internal/product"
+	"order-api/internal/cart/order"
+	"order-api/internal/product/prod"
 	"order-api/internal/user"
 	"order-api/pkg/db"
 	"order-api/pkg/middleware"
@@ -39,8 +39,8 @@ func App() http.Handler {
 
 	// Repositories
 	userRepository := user.NewUserRepository(db)
-	cartRepository := cart.NewCartRepository(db)
-	productRepository := product.NewProductRepository(db)
+	cartRepository := order.NewCartRepository(db)
+	productRepository := prod.NewProductRepository(db)
 
 	// Services
 	authService := auth.NewAuthService(auth.AuthServiceDeps{
@@ -48,12 +48,15 @@ func App() http.Handler {
 		Config:         conf,
 		Sender:         sender,
 	})
-	cartService := cart.NewCartService(cart.CartServiceDeps{
+	cartService := order.NewCartService(order.CartServiceDeps{
 		CartRepository:    cartRepository,
 		ProductRepository: productRepository,
 	})
-	productService := product.NewProductService(product.ProductServiceDeps{
+	productService := prod.NewProductService(prod.ProductServiceDeps{
 		ProductRepository: productRepository,
+		CartRepository: cartRepository,
+		UserRepository: userRepository,
+		Sender:            sender,
 	})
 
 	// Handlers
@@ -61,12 +64,12 @@ func App() http.Handler {
 		Config:      conf,
 		AuthService: authService,
 	})
-	cart.NewCartHandler(router, cart.CartHandlerDeps{
+	order.NewCartHandler(router, order.CartHandlerDeps{
 		Config:         conf,
 		CartService:    cartService,
 		ProductService: productService,
 	})
-	product.NewProductHandler(router, product.ProductHandlerDeps{
+	prod.NewProductHandler(router, prod.ProductHandlerDeps{
 		Config:         conf,
 		ProductService: productService,
 	})
