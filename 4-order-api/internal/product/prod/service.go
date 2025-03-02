@@ -47,8 +47,13 @@ func (service *ProductService) Update(phone string, prod *product.Product) (*pro
 		return nil, errors.New(er.ErrWrongUserCredentials)
 	}
 
+	oldProd, err := service.ProductRepository.FindById(uint64(prod.ID))
+	if err != nil {
+		return nil, err
+	}
+
 	// Обновление продукта
-	_, err := service.ProductRepository.Update(prod)
+	updatedProd, err := service.ProductRepository.Update(prod)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +61,7 @@ func (service *ProductService) Update(phone string, prod *product.Product) (*pro
 
 	// Стоит сделать в горутине
 	// Получение заказов с этим товаром
-	ids := prod.Carts
+	ids := updatedProd.Carts
 	for _, id := range ids {
 		// Получение заказов
 		cart, err := service.CartRepository.FindByID(uint64(id))
@@ -71,7 +76,7 @@ func (service *ProductService) Update(phone string, prod *product.Product) (*pro
 		}
 
 		// Отправка письма о изменении заказа
-		text := "Обратите внимание, данные товара '" + prod.Name + "' были изменены. Зайдите в личный кабинет, чтобы ознакомиться с изменениями."
+		text := "Обратите внимание, данные товара '" + oldProd.Name + "' были изменены. Зайдите в личный кабинет, чтобы ознакомиться с изменениями."
 		if user.Email != "" {
 			err = service.Sender.Email(user.Email, "Товар был изменен", text)
 			if err != nil {
@@ -83,11 +88,49 @@ func (service *ProductService) Update(phone string, prod *product.Product) (*pro
 	return prod, nil
 }
 
-func (service *ProductService) Delete(owner, user string, id uint64) error {
-	if owner != user {
+func (service *ProductService) Delete(owner, buyer string, id uint64) error {
+	if owner != buyer {
 		return errors.New(er.ErrWrongUserCredentials)
 	}
-	return service.ProductRepository.Delete(id)
+
+	prod, err := service.ProductRepository.FindById(id)
+	if err != nil {
+		return err
+	}
+
+	// Обновление продукта
+	err = service.ProductRepository.Delete(id)
+	if err != nil {
+		return err
+	}
+
+
+	// Стоит сделать в горутине
+	// Получение заказов с этим товаром
+	ids := prod.Carts
+	for _, id := range ids {
+		// Получение заказов
+		cart, err := service.CartRepository.FindByID(uint64(id))
+		if err != nil {
+			return err
+		}
+
+		// Получение данных пользователя
+		user, err := service.UserRepository.FindByKey(user.PhoneKey, cart.Phone)
+		if err != nil {
+			return err
+		}
+
+		// Отправка письма о изменении заказа
+		text := "Обратите внимание, товара '" + prod.Name + "' больше нет в наличии. Зайдите в личный кабинет, чтобы ознакомиться с изменениями."
+		if user.Email != "" {
+			err = service.Sender.Email(user.Email, "Товара нет в наличии", text)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // GetByIDs находит все продукты, даже с меткой удалено
