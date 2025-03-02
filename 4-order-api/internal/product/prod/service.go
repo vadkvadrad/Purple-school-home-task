@@ -28,6 +28,7 @@ type ProductServiceDeps struct {
 func NewProductService(deps ProductServiceDeps) *ProductService {
 	return &ProductService{
 		ProductRepository: deps.ProductRepository,
+		CartRepository:    deps.CartRepository,
 		UserRepository:    deps.UserRepository,
 		Sender:            deps.Sender,
 	}
@@ -52,24 +53,32 @@ func (service *ProductService) Update(phone string, prod *product.Product) (*pro
 		return nil, err
 	}
 
-	// // Получение заказов с этим товаром
-	// ids := prod.Carts
-	// carts := []cart.Cart{}
-	// for _, id := range ids {
-	// 	service.
-	// }
 
-	// // Получение email каждого из заказов
-	// emails := []string{}
+	// Стоит сделать в горутине
+	// Получение заказов с этим товаром
+	ids := prod.Carts
+	for _, id := range ids {
+		// Получение заказов
+		cart, err := service.CartRepository.FindByID(uint64(id))
+		if err != nil {
+			return nil, err
+		}
 
-	// // Отправка письма о изменении заказа
-	// text := "Обратите внимание, данные товара " + prod.Name + "были изменены. Зайдите в личный кабинет, чтобы ознакомиться с изменениями."
-	// if user.Email != "" {
-	// 	err = service.Sender.Email(user.Email, "Товар был изменен", text)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// }
+		// Получение данных пользователя
+		user, err := service.UserRepository.FindByKey(user.PhoneKey, cart.Phone)
+		if err != nil {
+			return nil, err
+		}
+
+		// Отправка письма о изменении заказа
+		text := "Обратите внимание, данные товара '" + prod.Name + "' были изменены. Зайдите в личный кабинет, чтобы ознакомиться с изменениями."
+		if user.Email != "" {
+			err = service.Sender.Email(user.Email, "Товар был изменен", text)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
 
 	return prod, nil
 }
