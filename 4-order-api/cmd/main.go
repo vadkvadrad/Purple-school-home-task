@@ -9,6 +9,7 @@ import (
 	"order-api/internal/product/prod"
 	"order-api/internal/user"
 	"order-api/pkg/db"
+	"order-api/pkg/event"
 	"order-api/pkg/middleware"
 	"order-api/pkg/sender"
 )
@@ -30,12 +31,15 @@ func App() http.Handler {
 	if err != nil {
 		panic(err)
 	}
+
 	router := http.NewServeMux()
 	db := db.NewDb(conf)
-	sender, err := sender.Load(conf)
+	eventBus := event.NewEventBus()
+	sender, err := sender.Load(conf, eventBus)
 	if err != nil {
 		panic(err)
 	}
+	
 
 	// Repositories
 	userRepository := user.NewUserRepository(db)
@@ -57,6 +61,7 @@ func App() http.Handler {
 		CartRepository: cartRepository,
 		UserRepository: userRepository,
 		Sender:            sender,
+		EventBus: eventBus,
 	})
 
 	// Handlers
@@ -73,6 +78,11 @@ func App() http.Handler {
 		Config:         conf,
 		ProductService: productService,
 	})
+
+
+	// listening for statistic
+	go sender.Listen()
+
 
 	// Middleware
 	stack := middleware.Chain(

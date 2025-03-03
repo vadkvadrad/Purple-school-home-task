@@ -4,14 +4,17 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"log"
 	"net/smtp"
 	"order-api/configs"
 	"order-api/pkg/er"
+	"order-api/pkg/event"
 
 	"github.com/jordan-wright/email"
 )
 
 type Sender struct {
+	EventBus *event.EventBus
 	Config    *configs.Config
 	Server    string
 	Port      string
@@ -20,7 +23,13 @@ type Sender struct {
 	Auth      smtp.Auth
 }
 
-func Load(conf *configs.Config) (*Sender, error) {
+type Addressee struct {
+	To string
+	Subject string
+	Text string
+}
+
+func Load(conf *configs.Config, event *event.EventBus) (*Sender, error) {
 	// Настройки SMTP
 	server := conf.Sender.Address
 	port := conf.Sender.Port
@@ -67,8 +76,10 @@ func Load(conf *configs.Config) (*Sender, error) {
 		Address:   address,
 		TlsConfig: tlsConfig,
 		Auth:      auth,
+		EventBus: event,
 	}, nil
 }
+
 
 func validate(server string, port string) error {
 	if server == "" {
@@ -78,6 +89,20 @@ func validate(server string, port string) error {
 		return errors.New("port is not specified")
 	}
 	return nil
+}
+
+func (send *Sender) Listen() {
+	for msg := range send.EventBus.Subscribe() {
+		if msg.Type == event.EventSendEmail {
+			addressee, ok := msg.Data.(Addressee) 
+			if !ok {
+				log.Fatalln("Bad addressee request ", msg.Data)
+				continue
+			}
+
+			send.Email(addressee.To, addressee.Subject, addressee.Text)
+		}
+	}
 }
 
 func (send *Sender) Email(to string, subject, text string) error {

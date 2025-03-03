@@ -6,6 +6,7 @@ import (
 	"order-api/internal/product"
 	"order-api/internal/user"
 	"order-api/pkg/er"
+	"order-api/pkg/event"
 	"order-api/pkg/sender"
 
 	"github.com/lib/pq"
@@ -16,6 +17,7 @@ type ProductService struct {
 	CartRepository    cart.ICartRepository
 	UserRepository    *user.UserRepository
 	Sender            *sender.Sender
+	EventBus          *event.EventBus
 }
 
 type ProductServiceDeps struct {
@@ -23,6 +25,7 @@ type ProductServiceDeps struct {
 	UserRepository    *user.UserRepository
 	CartRepository    cart.ICartRepository
 	Sender            *sender.Sender
+	EventBus          *event.EventBus
 }
 
 func NewProductService(deps ProductServiceDeps) *ProductService {
@@ -31,6 +34,7 @@ func NewProductService(deps ProductServiceDeps) *ProductService {
 		CartRepository:    deps.CartRepository,
 		UserRepository:    deps.UserRepository,
 		Sender:            deps.Sender,
+		EventBus:          deps.EventBus,
 	}
 }
 
@@ -59,7 +63,6 @@ func (service *ProductService) Update(phone string, prod *product.Product) (*pro
 	}
 
 
-	// Стоит сделать в горутине
 	// Получение заказов с этим товаром
 	ids := updatedProd.Carts
 	for _, id := range ids {
@@ -77,12 +80,14 @@ func (service *ProductService) Update(phone string, prod *product.Product) (*pro
 
 		// Отправка письма о изменении заказа
 		text := "Обратите внимание, данные товара '" + oldProd.Name + "' были изменены. Зайдите в личный кабинет, чтобы ознакомиться с изменениями."
-		if user.Email != "" {
-			err = service.Sender.Email(user.Email, "Товар был изменен", text)
-			if err != nil {
-				return nil, err
-			}
-		}
+		go service.EventBus.Publish(event.Event{
+			Type: event.EventSendEmail,
+			Data: sender.Addressee{
+				To: user.Email,
+				Subject: "Товар был изменен",
+				Text: text,
+			},
+		})
 	}
 
 	return prod, nil
@@ -104,8 +109,7 @@ func (service *ProductService) Delete(owner, buyer string, id uint64) error {
 		return err
 	}
 
-
-	// Стоит сделать в горутине
+	
 	// Получение заказов с этим товаром
 	ids := prod.Carts
 	for _, id := range ids {
@@ -121,14 +125,19 @@ func (service *ProductService) Delete(owner, buyer string, id uint64) error {
 			return err
 		}
 
-		// Отправка письма о изменении заказа
-		text := "Обратите внимание, товара '" + prod.Name + "' больше нет в наличии. Зайдите в личный кабинет, чтобы ознакомиться с изменениями."
-		if user.Email != "" {
-			err = service.Sender.Email(user.Email, "Товара нет в наличии", text)
-			if err != nil {
-				return err
-			}
+		if user.Email == "" {
+			continue
 		}
+
+		text := "Обратите внимание, товара '" + prod.Name + "' больше нет в наличии. Зайдите в личный кабинет, чтобы ознакомиться с изменениями."
+		go service.EventBus.Publish(event.Event{
+			Type: event.EventSendEmail,
+			Data: sender.Addressee{
+				To: user.Email,
+				Subject: "Товара нет в наличии",
+				Text: text,
+			},
+		})
 	}
 	return nil
 }
