@@ -30,7 +30,6 @@ func (j *JWT) Create(data JWTData) (token string, err error) {
 	return token, nil
 }
 
-
 func (j *JWT) Parse(token string) (bool, *JWTData) {
 	t, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
 		return []byte(j.Secret), nil
@@ -44,4 +43,4 @@ func (j *JWT) Parse(token string) (bool, *JWTData) {
 	return true, &JWTData{
 		Phone: phone.(string),
 	}
-} 
+}

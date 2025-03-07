@@ -5,17 +5,20 @@ import (
 	"net/http"
 	"order-api/configs"
 	"order-api/internal/auth"
-	"order-api/internal/product"
+	"order-api/internal/cart/order"
+	"order-api/internal/product/prod"
 	"order-api/internal/user"
 	"order-api/pkg/db"
+	"order-api/pkg/event"
 	"order-api/pkg/middleware"
+	"order-api/pkg/sender"
 )
 
 func main() {
 	app := App()
 
 	server := http.Server{
-		Addr: ":8081",
+		Addr:    ":8081",
 		Handler: app,
 	}
 
@@ -23,29 +26,63 @@ func main() {
 	server.ListenAndServe()
 }
 
-
 func App() http.Handler {
 	conf, err := configs.Load()
 	if err != nil {
 		panic(err)
 	}
+
 	router := http.NewServeMux()
 	db := db.NewDb(conf)
+	eventBus := event.NewEventBus()
+	sender, err := sender.Load(conf, eventBus)
+	if err != nil {
+		panic(err)
+	}
+	
 
 	// Repositories
-	userRepository := user.NewUserRepository(db, conf)
+	userRepository := user.NewUserRepository(db)
+	cartRepository := order.NewCartRepository(db)
+	productRepository := prod.NewProductRepository(db)
 
 	// Services
-	authService := auth.NewAuthService(conf, userRepository)
+	authService := auth.NewAuthService(auth.AuthServiceDeps{
+		UserRepository: userRepository,
+		Config:         conf,
+		Sender:         sender,
+	})
+	cartService := order.NewCartService(order.CartServiceDeps{
+		CartRepository:    cartRepository,
+		ProductRepository: productRepository,
+	})
+	productService := prod.NewProductService(prod.ProductServiceDeps{
+		ProductRepository: productRepository,
+		CartRepository: cartRepository,
+		UserRepository: userRepository,
+		Sender:            sender,
+		EventBus: eventBus,
+	})
 
 	// Handlers
-	product.NewProductHandler(router, &product.ProductHandlerDeps{
-		Config: conf,
-	})
 	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
-		Config: conf,
+		Config:      conf,
 		AuthService: authService,
 	})
+	order.NewCartHandler(router, order.CartHandlerDeps{
+		Config:         conf,
+		CartService:    cartService,
+		ProductService: productService,
+	})
+	prod.NewProductHandler(router, prod.ProductHandlerDeps{
+		Config:         conf,
+		ProductService: productService,
+	})
+
+
+	// listening for statistic
+	go sender.Listen()
+
 
 	// Middleware
 	stack := middleware.Chain(

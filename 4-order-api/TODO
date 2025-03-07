@@ -1,0 +1,24 @@
+Cart {
+	Handler {
+		1 Реализовать метод Update
+		2 Реализовать метод Delete
+		3 Реализовать метод GetByPhone
+		4 Вынести логику из GetByID в Product Repository
+	}
+	Service {
+		1 Добавить логику к Update
+		2 Добавить логику к Delete
+		3 Добавить логику к GetByPhone
+	}
+
+	Repository {
+		1 Метод Update и Delete аналогичен другим методам 
+		2 Метод GetByPhone нужно добавить условие по поику по телефону
+	}
+}
+
+Product {
+	Handler {
+		1 Реализовать метод Delete
+	}
+}

@@ -11,7 +11,7 @@ type LoginResponse struct {
 
 type VerifyRequest struct {
 	SessionId string `json:"session_id" validate:"required"`
-	Code string `json:"code" validate:"required"`
+	Code      string `json:"code" validate:"required"`
 }
 
 type VerifyResponse struct {

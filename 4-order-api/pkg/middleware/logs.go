@@ -8,21 +8,21 @@ import (
 )
 
 func Logging(next http.Handler) http.Handler {
-	logrus.SetFormatter(&logrus.JSONFormatter{})
+	logrus.SetFormatter(&logrus.TextFormatter{})
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		wrapper := &WrapperWriter{
 			ResponseWriter: w,
-			StatusCode: http.StatusOK,
+			StatusCode:     http.StatusOK,
 		}
 
 		next.ServeHTTP(wrapper, r)
 
 		logger := logrus.Fields{
 			"status code": wrapper.StatusCode,
-			"method":   r.Method,
-			"path": r.URL.Path,
-			"time": time.Since(start),
+			"method":      r.Method,
+			"path":        r.URL.Path,
+			"time":        time.Since(start),
 		}
 
 		if wrapper.StatusCode >= 500 {

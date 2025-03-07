@@ -1,10 +1,14 @@
 package er
 
 import (
-	"errors"
 	"fmt"
 )
 
+const (
+	ErrNotAuthorized        = "user are not authorized"
+	ErrWrongUserCredentials = "wrong user credentials"
+)
+
 func Wrap(msg string, err error) error {
-	return errors.New(fmt.Sprint(msg, err))
+	return fmt.Errorf("%s: %s", msg, err)
 }

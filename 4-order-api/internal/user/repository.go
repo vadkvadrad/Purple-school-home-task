@@ -2,27 +2,24 @@ package user
 
 import (
 	"fmt"
-	"order-api/configs"
 	"order-api/pkg/db"
 
 	"gorm.io/gorm/clause"
 )
 
 const (
-	EmailKey = "email"
-	PhoneKey = "phone"
+	EmailKey     = "email"
+	PhoneKey     = "phone"
 	SessionIdKey = "session_id"
 )
 
 type UserRepository struct {
 	Db *db.Db
-	Config *configs.Config
 }
 
-func NewUserRepository(db *db.Db, config *configs.Config) *UserRepository {
+func NewUserRepository(db *db.Db) *UserRepository {
 	return &UserRepository{
 		Db: db,
-		Config: config,
 	}
 }
 
@@ -32,7 +29,7 @@ func (repo *UserRepository) Create(user *User) (*User, error) {
 		return nil, result.Error
 	}
 	return user, nil
-} 
+}
 
 func (repo *UserRepository) Update(user *User) (*User, error) {
 	result := repo.Db.Clauses(clause.Returning{}).Updates(user)
@@ -40,7 +37,7 @@ func (repo *UserRepository) Update(user *User) (*User, error) {
 		return nil, result.Error
 	}
 	return user, nil
-} 
+}
 
 func (repo *UserRepository) FindByKey(key, data string) (*User, error) {
 	var user User
