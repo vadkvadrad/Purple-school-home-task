@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package order;
+
+option go_package = "./proto/order";
+
+import "product.proto";
+import "cart.proto";
+
+// Order service definition
+service OrderService {
+  rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+  rpc GetOrder(GetOrderRequest) returns (GetOrderResponse);
+  rpc UpdateOrder(UpdateOrderRequest) returns (UpdateOrderResponse);
+  rpc DeleteOrder(DeleteOrderRequest) returns (DeleteOrderResponse);
+  rpc GetOrderByPhone(GetOrderByPhoneRequest) returns (GetOrderByPhoneResponse);
+  rpc ProcessCartToOrder(ProcessCartToOrderRequest) returns (ProcessCartToOrderResponse);
+}
+
+message CreateOrderRequest {
+  string phone = 1;
+  repeated int64 product_ids = 2;
+  string status = 3;
+  int32 total_price = 4;
+}
+
+message CreateOrderResponse {
+  uint64 id = 1;
+  string phone = 2;
+  repeated int64 product_ids = 3;
+  string status = 4;
+  int32 total_price = 5;
+  string created_at = 6;
+}
+
+message GetOrderRequest {
+  uint64 id = 1;
+}
+
+message GetOrderResponse {
+  uint64 id = 1;
+  string phone = 2;
+  repeated product.ProductData products = 3;
+  string status = 4;
+  int32 total_price = 5;
+  string created_at = 6;
+}
+
+message UpdateOrderRequest {
+  uint64 id = 1;
+  string status = 2;
+}
+
+message UpdateOrderResponse {
+  uint64 id = 1;
+  string phone = 2;
+  repeated product.ProductData products = 3;
+  string status = 4;
+  int32 total_price = 5;
+  string created_at = 6;
+}
+
+message DeleteOrderRequest {
+  uint64 id = 1;
+}
+
+message DeleteOrderResponse {
+  bool success = 1;
+}
+
+message GetOrderByPhoneRequest {
+  string phone = 1;
+}
+
+message GetOrderByPhoneResponse {
+  repeated OrderData orders = 1;
+}
+
+message OrderData {
+  uint64 id = 1;
+  string phone = 2;
+  repeated product.ProductData products = 3;
+  string status = 4;
+  int32 total_price = 5;
+  string created_at = 6;
+}
+
+message ProcessCartToOrderRequest {
+  uint64 cart_id = 1;
+  string phone = 2;
+}
+
+message ProcessCartToOrderResponse {
+  uint64 order_id = 1;
+  string status = 2;
+  bool success = 3;
+}

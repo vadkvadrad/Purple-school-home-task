@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package cart;
+
+option go_package = "./proto/cart";
+
+// Cart service definition
+service CartService {
+  rpc CreateCart(CreateCartRequest) returns (CreateCartResponse);
+  rpc GetCart(GetCartRequest) returns (GetCartResponse);
+  rpc UpdateCart(UpdateCartRequest) returns (UpdateCartResponse);
+  rpc DeleteCart(DeleteCartRequest) returns (DeleteCartResponse);
+  rpc GetCartByPhone(GetCartByPhoneRequest) returns (GetCartByPhoneResponse);
+}
+
+message CreateCartRequest {
+  string phone = 1;
+  repeated int64 products = 2;
+}
+
+message CreateCartResponse {
+  uint64 id = 1;
+  string phone = 2;
+  repeated int64 products = 3;
+  string date = 4;
+}
+
+message GetCartRequest {
+  uint64 id = 1;
+  string phone = 2;
+}
+
+message GetCartResponse {
+  uint64 id = 1;
+  string phone = 2;
+  repeated int64 products = 3;
+  string date = 4;
+}
+
+message UpdateCartRequest {
+  uint64 id = 1;
+  string phone = 2;
+  repeated int64 products = 3;
+}
+
+message UpdateCartResponse {
+  uint64 id = 1;
+  string phone = 2;
+  repeated int64 products = 3;
+  string date = 4;
+}
+
+message DeleteCartRequest {
+  uint64 id = 1;
+  string phone = 2;
+}
+
+message DeleteCartResponse {
+  bool success = 1;
+}
+
+message GetCartByPhoneRequest {
+  string phone = 1;
+}
+
+message GetCartByPhoneResponse {
+  repeated CartData carts = 1;
+}
+
+message CartData {
+  uint64 id = 1;
+  string phone = 2;
+  repeated int64 products = 3;
+  string date = 4;
+}
