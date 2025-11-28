@@ -1,0 +1,117 @@
+syntax = "proto3";
+
+package product;
+
+option go_package = "./proto/product";
+
+// Product service definition
+service ProductService {
+  rpc CreateProduct(CreateProductRequest) returns (CreateProductResponse);
+  rpc GetProduct(GetProductRequest) returns (GetProductResponse);
+  rpc UpdateProduct(UpdateProductRequest) returns (UpdateProductResponse);
+  rpc DeleteProduct(DeleteProductRequest) returns (DeleteProductResponse);
+  rpc GetProductsByIds(GetProductsByIdsRequest) returns (GetProductsByIdsResponse);
+  rpc AddToCart(AddToCartRequest) returns (AddToCartResponse);
+  rpc RemoveFromCart(RemoveFromCartRequest) returns (RemoveFromCartResponse);
+}
+
+message CreateProductRequest {
+  string name = 1;
+  string description = 2;
+  repeated string images = 3;
+  int32 price = 4;
+  string currency = 5;
+  string owner = 6;
+}
+
+message CreateProductResponse {
+  uint64 id = 1;
+  string name = 2;
+  string description = 3;
+  repeated string images = 4;
+  int32 price = 5;
+  string currency = 6;
+  string owner = 7;
+  repeated int64 carts = 8;
+}
+
+message GetProductRequest {
+  uint64 id = 1;
+}
+
+message GetProductResponse {
+  uint64 id = 1;
+  string name = 2;
+  string description = 3;
+  repeated string images = 4;
+  int32 price = 5;
+  string currency = 6;
+  string owner = 7;
+  repeated int64 carts = 8;
+}
+
+message UpdateProductRequest {
+  uint64 id = 1;
+  string name = 2;
+  string description = 3;
+  repeated string images = 4;
+  int32 price = 5;
+  string currency = 6;
+  string owner = 7;
+}
+
+message UpdateProductResponse {
+  uint64 id = 1;
+  string name = 2;
+  string description = 3;
+  repeated string images = 4;
+  int32 price = 5;
+  string currency = 6;
+  string owner = 7;
+  repeated int64 carts = 8;
+}
+
+message DeleteProductRequest {
+  uint64 id = 1;
+}
+
+message DeleteProductResponse {
+  bool success = 1;
+}
+
+message GetProductsByIdsRequest {
+  repeated int64 ids = 1;
+}
+
+message GetProductsByIdsResponse {
+  repeated ProductData products = 1;
+}
+
+message ProductData {
+  uint64 id = 1;
+  string name = 2;
+  string description = 3;
+  repeated string images = 4;
+  int32 price = 5;
+  string currency = 6;
+  string owner = 7;
+  repeated int64 carts = 8;
+}
+
+message AddToCartRequest {
+  uint64 productId = 1;
+  uint64 cartId = 2;
+}
+
+message AddToCartResponse {
+  bool success = 1;
+}
+
+message RemoveFromCartRequest {
+  uint64 productId = 1;
+  uint64 cartId = 2;
+}
+
+message RemoveFromCartResponse {
+  bool success = 1;
+}
