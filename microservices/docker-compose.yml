@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  postgres-cart:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: cart_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5431:5432"
+    volumes:
+      - cart_data:/var/lib/postgresql/data
+
+  postgres-product:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: product_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - product_data:/var/lib/postgresql/data
+
+  postgres-order:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: order_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - order_data:/var/lib/postgresql/data
+
+  cart-service:
+    build: ./cart-service
+    ports:
+      - "50051:50051"
+    environment:
+      DB_DSN: "host=postgres-cart user=postgres password=postgres dbname=cart_db port=5432 sslmode=disable"
+    depends_on:
+      - postgres-cart
+    networks:
+      - microservice-network
+
+  product-service:
+    build: ./product-service
+    ports:
+      - "50052:50052"
+    environment:
+      DB_DSN: "host=postgres-product user=postgres password=postgres dbname=product_db port=5432 sslmode=disable"
+    depends_on:
+      - postgres-product
+    networks:
+      - microservice-network
+
+  order-service:
+    build: ./order-service
+    ports:
+      - "50053:50053"
+    environment:
+      DB_DSN: "host=postgres-order user=postgres password=postgres dbname=order_db port=5432 sslmode=disable"
+    depends_on:
+      - postgres-order
+      - product-service  # Order service depends on product service
+    networks:
+      - microservice-network
+
+volumes:
+  cart_data:
+  product_data:
+  order_data:
+
+networks:
+  microservice-network:
+    driver: bridge
